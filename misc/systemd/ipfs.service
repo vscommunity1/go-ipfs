@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # This file will be overwritten on package upgrades, avoid customizations here.
 #
 # To make persistant changes, create file in 
@@ -35,6 +36,13 @@ Group=ipfs
 StateDirectory=ipfs
 ExecStart=/usr/bin/ipfs daemon --init --migrate
 Restart=on-failure
+=======
+[Unit]
+Description=IPFS Daemon
+
+[Service]
+ExecStart=/usr/bin/ipfs daemon --init --migrate
+>>>>>>> implement systemd socket activation
 KillSignal=SIGINT
 
 [Install]

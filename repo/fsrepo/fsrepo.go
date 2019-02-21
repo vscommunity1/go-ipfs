@@ -36,7 +36,7 @@ const LockFile = "repo.lock"
 var log = logging.Logger("fsrepo")
 
 // version number that we are currently expecting to see
-var RepoVersion = 9
+var RepoVersion = 8
 
 var migrationInstructions = `See https://github.com/ipfs/fs-repo-migrations/blob/master/run.md
 Sorry for the inconvenience. In the future, these will run automatically.`
@@ -359,30 +359,13 @@ func (r *FSRepo) Path() string {
 
 // SetAPIAddr writes the API Addr to the /api file.
 func (r *FSRepo) SetAPIAddr(addr ma.Multiaddr) error {
-	// Create a temp file to write the address, so that we don't leave empty file when the
-	// program crashes after creating the file.
-	f, err := os.Create(filepath.Join(r.path, "."+apiFile+".tmp"))
+	f, err := os.Create(filepath.Join(r.path, apiFile))
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	if _, err = f.WriteString(addr.String()); err != nil {
-		return err
-	}
-	if err = f.Close(); err != nil {
-		return err
-	}
-
-	// Atomically rename the temp file to the correct file name.
-	if err = os.Rename(filepath.Join(r.path, "."+apiFile+".tmp"), filepath.Join(r.path,
-		apiFile)); err == nil {
-		return nil
-	}
-	// Remove the temp file when rename return error
-	if err1 := os.Remove(filepath.Join(r.path, "."+apiFile+".tmp")); err1 != nil {
-		return fmt.Errorf("File Rename error: %s, File remove error: %s", err.Error(),
-			err1.Error())
-	}
+	_, err = f.WriteString(addr.String())
 	return err
 }
 
@@ -402,7 +385,7 @@ func (r *FSRepo) openConfig() error {
 
 func (r *FSRepo) openKeystore() error {
 	ksp := filepath.Join(r.path, "keystore")
-	ks, err := keystore.NewFSKeystore(ksp)
+	ks, err := keystore.NewKeystore(ksp)
 	if err != nil {
 		return err
 	}

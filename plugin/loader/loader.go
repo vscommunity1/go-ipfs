@@ -2,31 +2,18 @@ package loader
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
-	config "github.com/ipfs/go-ipfs-config"
-	cserialize "github.com/ipfs/go-ipfs-config/serialize"
-
-	"github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/core/coreapi"
 	coredag "github.com/ipfs/go-ipfs/core/coredag"
 	plugin "github.com/ipfs/go-ipfs/plugin"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
 	ipld "github.com/ipfs/go-ipld-format"
 	logging "github.com/ipfs/go-log"
+	coreiface "github.com/ipfs/interface-go-ipfs-core"
 	opentracing "github.com/opentracing/opentracing-go"
 )
-
-var preloadPlugins []plugin.Plugin
-
-// Preload adds one or more plugins to the preload list. This should _only_ be called during init.
-func Preload(plugins ...plugin.Plugin) {
-	preloadPlugins = append(preloadPlugins, plugins...)
-}
 
 var log = logging.Logger("plugin/loader")
 
@@ -76,44 +63,20 @@ func (ls loaderState) String() string {
 	}
 }
 
-// PluginLoader keeps track of loaded plugins.
-//
-// To use:
-// 1. Load any desired plugins with Load and LoadDirectory. Preloaded plugins
-//    will automatically be loaded.
-// 2. Call Initialize to run all initialization logic.
-// 3. Call Inject to register the plugins.
-// 4. Optionally call Start to start plugins.
-// 5. Call Close to close all plugins.
+// PluginLoader keeps track of loaded plugins
 type PluginLoader struct {
 	state   loaderState
 	plugins map[string]plugin.Plugin
 	started []plugin.Plugin
-	config  config.Plugins
-	repo    string
 }
 
 // NewPluginLoader creates new plugin loader
-func NewPluginLoader(repo string) (*PluginLoader, error) {
-	loader := &PluginLoader{plugins: make(map[string]plugin.Plugin, len(preloadPlugins)), repo: repo}
-	if repo != "" {
-		cfg, err := cserialize.Load(filepath.Join(repo, config.DefaultConfigFile))
-		switch err {
-		case cserialize.ErrNotInitialized:
-		case nil:
-			loader.config = cfg.Plugins
-		default:
-			return nil, err
-		}
-	}
+func NewPluginLoader() (*PluginLoader, error) {
+	loader := &PluginLoader{plugins: make(map[string]plugin.Plugin, len(preloadPlugins))}
 	for _, v := range preloadPlugins {
 		if err := loader.Load(v); err != nil {
 			return nil, err
 		}
-	}
-
-	if err := loader.LoadDirectory(filepath.Join(repo, "plugins")); err != nil {
-		return nil, err
 	}
 	return loader, nil
 }
@@ -133,7 +96,6 @@ func (loader *PluginLoader) transition(from, to loaderState) error {
 	return nil
 }
 
-// Load loads a plugin into the plugin loader.
 func (loader *PluginLoader) Load(pl plugin.Plugin) error {
 	if err := loader.assertState(loaderLoading); err != nil {
 		return err
@@ -147,15 +109,10 @@ func (loader *PluginLoader) Load(pl plugin.Plugin) error {
 				"while trying to load dynamically: %s",
 			name, ppl.Version(), pl.Version())
 	}
-	if loader.config.Plugins[name].Disabled {
-		log.Infof("not loading disabled plugin %s", name)
-		return nil
-	}
 	loader.plugins[name] = pl
 	return nil
 }
 
-// LoadDirectory loads a directory of plugins into the plugin loader.
 func (loader *PluginLoader) LoadDirectory(pluginDir string) error {
 	if err := loader.assertState(loaderLoading); err != nil {
 		return err
@@ -190,11 +147,8 @@ func (loader *PluginLoader) Initialize() error {
 	if err := loader.transition(loaderLoading, loaderInitializing); err != nil {
 		return err
 	}
-	for name, p := range loader.plugins {
-		err := p.Init(&plugin.Environment{
-			Repo:   loader.repo,
-			Config: loader.config.Plugins[name].Config,
-		})
+	for _, p := range loader.plugins {
+		err := p.Init()
 		if err != nil {
 			loader.state = loaderFailed
 			return err
@@ -238,25 +192,13 @@ func (loader *PluginLoader) Inject() error {
 }
 
 // Start starts all long-running plugins.
-func (loader *PluginLoader) Start(node *core.IpfsNode) error {
+func (loader *PluginLoader) Start(iface coreiface.CoreAPI) error {
 	if err := loader.transition(loaderInjected, loaderStarting); err != nil {
-		return err
-	}
-	iface, err := coreapi.NewCoreAPI(node)
-	if err != nil {
 		return err
 	}
 	for _, pl := range loader.plugins {
 		if pl, ok := pl.(plugin.PluginDaemon); ok {
 			err := pl.Start(iface)
-			if err != nil {
-				_ = loader.Close()
-				return err
-			}
-			loader.started = append(loader.started, pl)
-		}
-		if pl, ok := pl.(plugin.PluginDaemonInternal); ok {
-			err := pl.Start(node)
 			if err != nil {
 				_ = loader.Close()
 				return err
@@ -281,8 +223,8 @@ func (loader *PluginLoader) Close() error {
 	started := loader.started
 	loader.started = nil
 	for _, pl := range started {
-		if closer, ok := pl.(io.Closer); ok {
-			err := closer.Close()
+		if pl, ok := pl.(plugin.PluginDaemon); ok {
+			err := pl.Close()
 			if err != nil {
 				errs = append(errs, fmt.Sprintf(
 					"error closing plugin %s: %s",

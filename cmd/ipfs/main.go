@@ -6,9 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net"
-	"net/http"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"time"
@@ -22,10 +21,10 @@ import (
 	repo "github.com/ipfs/go-ipfs/repo"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
-	cmds "github.com/ipfs/go-ipfs-cmds"
+	"github.com/ipfs/go-ipfs-cmds"
 	"github.com/ipfs/go-ipfs-cmds/cli"
-	cmdhttp "github.com/ipfs/go-ipfs-cmds/http"
-	config "github.com/ipfs/go-ipfs-config"
+	"github.com/ipfs/go-ipfs-cmds/http"
+	"github.com/ipfs/go-ipfs-config"
 	u "github.com/ipfs/go-ipfs-util"
 	logging "github.com/ipfs/go-log"
 	loggables "github.com/libp2p/go-libp2p-loggables"
@@ -47,7 +46,18 @@ const (
 )
 
 func loadPlugins(repoPath string) (*loader.PluginLoader, error) {
-	plugins, err := loader.NewPluginLoader(repoPath)
+	pluginpath := filepath.Join(repoPath, "plugins")
+
+	// check if repo is accessible before loading plugins
+	var plugins *loader.PluginLoader
+	ok, err := checkPermissions(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		pluginpath = ""
+	}
+	plugins, err = loader.NewPluginLoader(pluginpath)
 	if err != nil {
 		return nil, fmt.Errorf("error loading plugins: %s", err)
 	}
@@ -113,9 +123,6 @@ func mainRet() int {
 				os.Args[1] = "--help"
 			}
 		}
-	} else if insideGUI() { // if no args were passed, and we're in a GUI environment
-		// launch the daemon instead of launching a ghost window
-		os.Args = append(os.Args, "daemon", "--init")
 	}
 
 	// output depends on executable name passed in os.Args
@@ -175,10 +182,6 @@ func mainRet() int {
 	return 0
 }
 
-func insideGUI() bool {
-	return util.InsideGUI()
-}
-
 func checkDebug(req *cmds.Request) {
 	// check if user wants to debug. option OR env var.
 	debug, _ := req.Options["debug"].(bool)
@@ -220,13 +223,13 @@ func makeExecutor(req *cmds.Request, env interface{}) (cmds.Executor, error) {
 		return nil, err
 	}
 
-	// Require that the command be run on the daemon when the API flag is
-	// passed (unless we're trying to _run_ the daemon).
-	daemonRequested := apiAddr != nil && req.Command != daemonCmd
+	// Force the daemon when the API flag is passed (unless we're trying to
+	// _run_ the daemon).
+	daemonForced := apiAddr != nil && req.Command != daemonCmd
 
 	// Run this on the client if required.
 	if details.cannotRunOnDaemon || req.Command.External {
-		if daemonRequested {
+		if daemonForced {
 			// User requested that the command be run on the daemon but we can't.
 			// NOTE: We drop this check for the `ipfs daemon` command.
 			return nil, errors.New("api flag specified but command cannot be run on the daemon")
@@ -258,39 +261,37 @@ func makeExecutor(req *cmds.Request, env interface{}) (cmds.Executor, error) {
 	if err != nil {
 		return nil, err
 	}
-	network, host, err := manet.DialArgs(apiAddr)
+	_, host, err := manet.DialArgs(apiAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	// Construct the executor.
-	opts := []cmdhttp.ClientOpt{
-		cmdhttp.ClientWithAPIPrefix(corehttp.APIPath),
+	opts := []http.ClientOpt{
+		http.ClientWithAPIPrefix(corehttp.APIPath),
 	}
 
 	// Fallback on a local executor if we (a) have a repo and (b) aren't
 	// forcing a daemon.
-	if !daemonRequested && fsrepo.IsInitialized(cctx.ConfigRoot) {
-		opts = append(opts, cmdhttp.ClientWithFallback(exe))
+	if !daemonForced && fsrepo.IsInitialized(cctx.ConfigRoot) {
+		opts = append(opts, http.ClientWithFallback(exe))
 	}
 
-	switch network {
-	case "tcp", "tcp4", "tcp6":
-	case "unix":
-		path := host
-		host = "unix"
-		opts = append(opts, cmdhttp.ClientWithHTTPClient(&http.Client{
-			Transport: &http.Transport{
-				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-					return net.Dial("unix", path)
-				},
-			},
-		}))
-	default:
-		return nil, fmt.Errorf("unsupported API address: %s", apiAddr)
+	return http.NewClient(host, opts...), nil
+}
+
+func checkPermissions(path string) (bool, error) {
+	_, err := os.Open(path)
+	if os.IsNotExist(err) {
+		// repo does not exist yet - don't load plugins, but also don't fail
+		return false, nil
+	}
+	if os.IsPermission(err) {
+		// repo is not accessible. error out.
+		return false, fmt.Errorf("error opening repository at %s: permission denied", path)
 	}
 
-	return cmdhttp.NewClient(host, opts...), nil
+	return true, nil
 }
 
 // commandDetails returns a command's details for the command given by |path|.

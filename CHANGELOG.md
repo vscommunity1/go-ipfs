@@ -1,16 +1,13 @@
 # go-ipfs changelog
 
-## 0.4.22 2019-08-06
+## 0.4.22 2019-07-05
 
-We're releasing a PATCH release of go-ipfs based on 0.4.21 containing some critical fixes.
+We're releasing a PATCH release of go-ipfs based on 0.4.21 containing some
+critical fixes while we improve our release process and testing procedures.
 
-The past several releases have been shaky and the network has scaled to the
-point where where small changes can have a wide-reaching impact on the entire
-network. To keep this situation from escalating, we've put a hold on releasing
-new features until we can improve our [release
-process](https://github.com/ipfs/go-ipfs/pull/6482) (which we will be trialing
-in this release) and [testing
-procedures](https://github.com/ipfs/go-ipfs/issues/6483).
+The past several releases have been shaky so we're cutting a patch release to
+fix some critical issues in the 0.4.22 while we re-evaluate our release process
+and improve our testing.
 
 This release includes fixes for the following regressions:
 
@@ -31,15 +28,7 @@ It also includes fixes for:
    ([ipfs/go-ipfs#6419](https://github.com/ipfs/go-ipfs/pull/6419)).
 3. Potential pin-set corruption given a concurrent `ipfs repo gc` and `ipfs pin
    rm` ([ipfs/go-ipfs#6444](https://github.com/ipfs/go-ipfs/pull/6444)).
-4. Build failure due to a deleted git tag in one of our dependencies
-   ([ipfs/go-ds-badger#64](https://github.com/ipfs/go-ds-badger/pull/65)).
-
-
-Thanks to:
-
-* @hannahhoward for fixing both bitswap issues.
-* @sanderpick for catching and fixing the local discovery bug.
-* @campoy for fixing the build issue.
+4. Build failure due to a deleted git tag in one of our dependencies.
 
 ## 0.4.21 2019-05-30
 

@@ -21,6 +21,11 @@ if command -v ipfs > /dev/null 2>&1; then
   cp "$(command -v ipfs)" ipfs
 fi
 
+IPFS_BIN=$(which ipfs)
+if [[ -e "$IPFS_BIN" ]]; then
+    cp "$IPFS_BIN" ipfs
+fi
+
 echo Collecting goroutine stacks
 curl -s -o goroutines.stacks "$SOURCE_URL"'/debug/pprof/goroutine?debug=2'
 

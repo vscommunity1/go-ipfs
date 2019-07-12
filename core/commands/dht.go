@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"time"
 
 	cmdenv "github.com/ipfs/go-ipfs/core/commands/cmdenv"
@@ -68,7 +67,7 @@ var queryDhtCmd = &cmds.Command{
 			return ErrNotDHT
 		}
 
-		id, err := peer.Decode(req.Arguments[0])
+		id, err := peer.IDB58Decode(req.Arguments[0])
 		if err != nil {
 			return cmds.ClientError("invalid peer ID")
 		}
@@ -76,28 +75,19 @@ var queryDhtCmd = &cmds.Command{
 		ctx, cancel := context.WithCancel(req.Context)
 		ctx, events := routing.RegisterForQueryEvents(ctx)
 
-		dht := nd.DHT.WAN
-		if !nd.DHT.WANActive() {
-			dht = nd.DHT.LAN
+		closestPeers, err := nd.DHT.GetClosestPeers(ctx, string(id))
+		if err != nil {
+			cancel()
+			return err
 		}
 
-		errCh := make(chan error, 1)
 		go func() {
-			defer close(errCh)
 			defer cancel()
-			closestPeers, err := dht.GetClosestPeers(ctx, string(id))
-			if closestPeers != nil {
-				for p := range closestPeers {
-					routing.PublishQueryEvent(ctx, &routing.QueryEvent{
-						ID:   p,
-						Type: routing.FinalPeer,
-					})
-				}
-			}
-
-			if err != nil {
-				errCh <- err
-				return
+			for p := range closestPeers {
+				routing.PublishQueryEvent(ctx, &routing.QueryEvent{
+					ID:   p,
+					Type: routing.FinalPeer,
+				})
 			}
 		}()
 
@@ -107,13 +97,15 @@ var queryDhtCmd = &cmds.Command{
 			}
 		}
 
-		return <-errCh
+		return nil
 	},
 	Encoders: cmds.EncoderMap{
 		cmds.Text: cmds.MakeTypedEncoder(func(req *cmds.Request, w io.Writer, out *routing.QueryEvent) error {
 			pfm := pfuncMap{
-				routing.FinalPeer: func(obj *routing.QueryEvent, out io.Writer, verbose bool) error {
-					fmt.Fprintf(out, "%s\n", obj.ID)
+				routing.PeerResponse: func(obj *routing.QueryEvent, out io.Writer, verbose bool) error {
+					for _, p := range obj.Responses {
+						fmt.Fprintf(out, "%s\n", p.ID.Pretty())
+					}
 					return nil
 				},
 			}
@@ -334,7 +326,7 @@ func provideKeysRec(ctx context.Context, r routing.Routing, dserv ipld.DAGServic
 	for _, c := range cids {
 		kset := cid.NewSet()
 
-		err := dag.Walk(ctx, dag.GetLinksDirect(dserv), c, kset.Visit)
+		err := dag.WalkParallel(ctx, dag.GetLinksDirect(dserv), c, kset.Visit)
 		if err != nil {
 			return err
 		}
@@ -377,7 +369,7 @@ var findPeerDhtCmd = &cmds.Command{
 			return ErrNotOnline
 		}
 
-		pid, err := peer.Decode(req.Arguments[0])
+		pid, err := peer.IDB58Decode(req.Arguments[0])
 		if err != nil {
 			return err
 		}
@@ -523,8 +515,8 @@ var putValueDhtCmd = &cmds.Command{
 	Helptext: cmds.HelpText{
 		Tagline: "Write a key/value pair to the routing system.",
 		ShortDescription: `
-Given a key of the form /foo/bar and a valid value for that key, this will write
-that value to the routing system with that key.
+Given a key of the form /foo/bar and a value of any form, this will write that
+value to the routing system with that key.
 
 Keys have two parts: a keytype (foo) and the key name (bar). IPNS uses the
 /ipns keytype, and expects the key name to be a Peer ID. IPNS entries are
@@ -535,21 +527,27 @@ this is only /ipns. Unless you have a relatively deep understanding of the
 go-ipfs routing internals, you likely want to be using 'ipfs name publish' instead
 of this.
 
-The value must be a valid value for the given key type. For example, if the key
-is /ipns/QmFoo, the value must be IPNS record (protobuf) signed with the key
-identified by QmFoo.
+Value is arbitrary text. Standard input can be used to provide value.
+
+NOTE: A value may not exceed 2048 bytes.
 `,
 	},
 
 	Arguments: []cmds.Argument{
 		cmds.StringArg("key", true, false, "The key to store the value at."),
-		cmds.FileArg("value-file", true, false, "A path to a file containing the value to store.").EnableStdin(),
+		cmds.StringArg("value", true, false, "The value to store.").EnableStdin(),
 	},
 	Options: []cmds.Option{
 		cmds.BoolOption(dhtVerboseOptionName, "v", "Print extra information."),
 	},
 	Run: func(req *cmds.Request, res cmds.ResponseEmitter, env cmds.Environment) error {
 		nd, err := cmdenv.GetNode(env)
+		if err != nil {
+			return err
+		}
+
+		// Needed to parse stdin args.
+		err = req.ParseBodyArgs()
 		if err != nil {
 			return err
 		}
@@ -563,16 +561,7 @@ identified by QmFoo.
 			return err
 		}
 
-		file, err := cmdenv.GetFileArg(req.Files.Entries())
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		data, err := ioutil.ReadAll(file)
-		if err != nil {
-			return err
-		}
+		data := req.Arguments[1]
 
 		ctx, cancel := context.WithCancel(req.Context)
 		ctx, events := routing.RegisterForQueryEvents(ctx)

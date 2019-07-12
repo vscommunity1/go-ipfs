@@ -8,14 +8,15 @@ import (
 	"strings"
 
 	bserv "github.com/ipfs/go-blockservice"
+	pin "github.com/ipfs/go-ipfs/pin"
+	dag "github.com/ipfs/go-merkledag"
+
 	cid "github.com/ipfs/go-cid"
 	dstore "github.com/ipfs/go-datastore"
 	bstore "github.com/ipfs/go-ipfs-blockstore"
 	offline "github.com/ipfs/go-ipfs-exchange-offline"
-	pin "github.com/ipfs/go-ipfs-pinner"
 	ipld "github.com/ipfs/go-ipld-format"
 	logging "github.com/ipfs/go-log"
-	dag "github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-verifcid"
 )
 
@@ -40,7 +41,11 @@ type Result struct {
 func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn pin.Pinner, bestEffortRoots []cid.Cid) <-chan Result {
 	ctx, cancel := context.WithCancel(ctx)
 
+	elock := log.EventBegin(ctx, "GC.lockWait")
 	unlocker := bs.GCLock()
+	elock.Done()
+	elock = log.EventBegin(ctx, "GC.locked")
+	emark := log.EventBegin(ctx, "GC.mark")
 
 	bsrv := bserv.New(bs, offline.Exchange(bs))
 	ds := dag.NewDAGService(bsrv)
@@ -51,6 +56,7 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 		defer cancel()
 		defer close(output)
 		defer unlocker.Unlock()
+		defer elock.Done()
 
 		gcs, err := ColoredSet(ctx, pn, ds, bestEffortRoots, output)
 		if err != nil {
@@ -60,6 +66,12 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 			}
 			return
 		}
+		emark.Append(logging.LoggableMap{
+			"blackSetSize": fmt.Sprintf("%d", gcs.Len()),
+		})
+		emark.Done()
+		esweep := log.EventBegin(ctx, "GC.sweep")
+
 		keychan, err := bs.AllKeysChan(ctx)
 		if err != nil {
 			select {
@@ -102,6 +114,10 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 				break loop
 			}
 		}
+		esweep.Append(logging.LoggableMap{
+			"whiteSetSize": fmt.Sprintf("%d", removed),
+		})
+		esweep.Done()
 		if errors {
 			select {
 			case output <- Result{Error: ErrCannotDeleteSomeBlocks}:
@@ -110,6 +126,7 @@ func GC(ctx context.Context, bs bstore.GCBlockstore, dstor dstore.Datastore, pn 
 			}
 		}
 
+		defer log.EventBegin(ctx, "GC.datastore").Done()
 		gds, ok := dstor.(dstore.GCDatastore)
 		if !ok {
 			return
@@ -154,7 +171,7 @@ func Descendants(ctx context.Context, getLinks dag.GetLinks, set *cid.Set, roots
 
 	for _, c := range roots {
 		// Walk recursively walks the dag and adds the keys to the given set
-		err := dag.Walk(ctx, verifyGetLinks, c, set.Visit, dag.Concurrent())
+		err := dag.Walk(ctx, verifyGetLinks, c, set.Visit)
 
 		if err != nil {
 			err = verboseCidError(err)
@@ -184,11 +201,7 @@ func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffo
 		}
 		return links, nil
 	}
-	rkeys, err := pn.RecursiveKeys(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = Descendants(ctx, getLinks, gcs, rkeys)
+	err := Descendants(ctx, getLinks, gcs, pn.RecursiveKeys())
 	if err != nil {
 		errors = true
 		select {
@@ -220,19 +233,11 @@ func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffo
 		}
 	}
 
-	dkeys, err := pn.DirectKeys(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, k := range dkeys {
+	for _, k := range pn.DirectKeys() {
 		gcs.Add(k)
 	}
 
-	ikeys, err := pn.InternalPins(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = Descendants(ctx, getLinks, gcs, ikeys)
+	err = Descendants(ctx, getLinks, gcs, pn.InternalPins())
 	if err != nil {
 		errors = true
 		select {
@@ -250,7 +255,7 @@ func ColoredSet(ctx context.Context, pn pin.Pinner, ng ipld.NodeGetter, bestEffo
 }
 
 // ErrCannotFetchAllLinks is returned as the last Result in the GC output
-// channel when there was an error creating the marked set because of a
+// channel when there was a error creating the marked set because of a
 // problem when finding descendants.
 var ErrCannotFetchAllLinks = errors.New("garbage collection aborted: could not retrieve some links")
 

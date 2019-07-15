@@ -48,6 +48,9 @@ ifneq ($(filter coverage% clean distclean test/unit/gotest.junit.xml,$(MAKECMDGO
 	include $(dir)/Rules.mk
 endif
 
+dir := pin/internal/pb
+include $(dir)/Rules.mk
+
 # -------------------- #
 #   universal rules    #
 # -------------------- #

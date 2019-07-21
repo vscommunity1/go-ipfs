@@ -1,4 +1,4 @@
-// +build !windows,!openbsd,!netbsd,!nofuse
+// +build !windows,!openbsd,!nofuse
 
 package node
 

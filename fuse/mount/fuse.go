@@ -1,4 +1,4 @@
-// +build !nofuse,!windows,!openbsd,!netbsd
+// +build !nofuse,!windows,!openbsd
 
 package mount
 
@@ -110,7 +110,7 @@ func (m *mount) unmount() error {
 		m.setActive(false)
 		return nil
 	}
-	log.Warnf("fuse unmount err: %s", err)
+	log.Warningf("fuse unmount err: %s", err)
 
 	// try closing the fuseConn
 	err = m.fuseConn.Close()
@@ -118,7 +118,7 @@ func (m *mount) unmount() error {
 		m.setActive(false)
 		return nil
 	}
-	log.Warnf("fuse conn error: %s", err)
+	log.Warningf("fuse conn error: %s", err)
 
 	// try mount.ForceUnmountManyTimes
 	if err := ForceUnmountManyTimes(m, 10); err != nil {

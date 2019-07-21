@@ -1,4 +1,4 @@
-// +build !nofuse,!openbsd,!netbsd
+// +build !nofuse,!openbsd
 
 // package fuse/ipns implements a fuse filesystem that interfaces
 // with ipns, the naming system for ipfs.
@@ -10,19 +10,22 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
+
+	core "github.com/ipfs/go-ipfs/core"
+	namesys "github.com/ipfs/go-ipfs/namesys"
+	resolve "github.com/ipfs/go-ipfs/namesys/resolve"
 
 	dag "github.com/ipfs/go-merkledag"
+	path "github.com/ipfs/go-path"
 	ft "github.com/ipfs/go-unixfs"
-	path "github.com/ipfs/interface-go-ipfs-core/path"
 
 	fuse "bazil.org/fuse"
 	fs "bazil.org/fuse/fs"
 	cid "github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log"
 	mfs "github.com/ipfs/go-mfs"
-	iface "github.com/ipfs/interface-go-ipfs-core"
-	options "github.com/ipfs/interface-go-ipfs-core/options"
+	ci "github.com/libp2p/go-libp2p-core/crypto"
+	peer "github.com/libp2p/go-libp2p-core/peer"
 )
 
 func init() {
@@ -37,17 +40,17 @@ var log = logging.Logger("fuse/ipns")
 
 // FileSystem is the readwrite IPNS Fuse Filesystem.
 type FileSystem struct {
-	Ipfs     iface.CoreAPI
+	Ipfs     *core.IpfsNode
 	RootNode *Root
 }
 
 // NewFileSystem constructs new fs using given core.IpfsNode instance.
-func NewFileSystem(ctx context.Context, ipfs iface.CoreAPI, ipfspath, ipnspath string) (*FileSystem, error) {
-	key, err := ipfs.Key().Self(ctx)
-	if err != nil {
-		return nil, err
+func NewFileSystem(ipfs *core.IpfsNode, sk ci.PrivKey, ipfspath, ipnspath string) (*FileSystem, error) {
+
+	kmap := map[string]ci.PrivKey{
+		"local": sk,
 	}
-	root, err := CreateRoot(ctx, ipfs, map[string]iface.Key{"local": key}, ipfspath, ipnspath)
+	root, err := CreateRoot(ipfs, kmap, ipfspath, ipnspath)
 	if err != nil {
 		return nil, err
 	}
@@ -70,62 +73,80 @@ func (f *FileSystem) Destroy() {
 
 // Root is the root object of the filesystem tree.
 type Root struct {
-	Ipfs iface.CoreAPI
-	Keys map[string]iface.Key
+	Ipfs *core.IpfsNode
+	Keys map[string]ci.PrivKey
 
 	// Used for symlinking into ipfs
 	IpfsRoot  string
 	IpnsRoot  string
 	LocalDirs map[string]fs.Node
-	Roots     map[string]*mfs.Root
+	Roots     map[string]*keyRoot
 
 	LocalLinks map[string]*Link
 }
 
-func ipnsPubFunc(ipfs iface.CoreAPI, key iface.Key) mfs.PubFunc {
+func ipnsPubFunc(ipfs *core.IpfsNode, k ci.PrivKey) mfs.PubFunc {
 	return func(ctx context.Context, c cid.Cid) error {
-		_, err := ipfs.Name().Publish(ctx, path.IpfsPath(c), options.Name.Key(key.Name()))
-		return err
+		return ipfs.Namesys.Publish(ctx, k, path.FromCid(c))
 	}
 }
 
-func loadRoot(ctx context.Context, ipfs iface.CoreAPI, key iface.Key) (*mfs.Root, fs.Node, error) {
-	node, err := ipfs.ResolveNode(ctx, key.Path())
+func loadRoot(ctx context.Context, rt *keyRoot, ipfs *core.IpfsNode, name string) (fs.Node, error) {
+	p, err := path.ParsePath("/ipns/" + name)
+	if err != nil {
+		log.Errorf("mkpath %s: %s", name, err)
+		return nil, err
+	}
+
+	node, err := resolve.Resolve(ctx, ipfs.Namesys, ipfs.Resolver, p)
 	switch err {
 	case nil:
-	case iface.ErrResolveFailed:
+	case namesys.ErrResolveFailed:
 		node = ft.EmptyDirNode()
 	default:
-		log.Errorf("looking up %s: %s", key.Path(), err)
-		return nil, nil, err
+		log.Errorf("looking up %s: %s", p, err)
+		return nil, err
 	}
 
 	pbnode, ok := node.(*dag.ProtoNode)
 	if !ok {
-		return nil, nil, dag.ErrNotProtobuf
+		return nil, dag.ErrNotProtobuf
 	}
 
-	root, err := mfs.NewRoot(ctx, ipfs.Dag(), pbnode, ipnsPubFunc(ipfs, key))
+	root, err := mfs.NewRoot(ctx, ipfs.DAG, pbnode, ipnsPubFunc(ipfs, rt.k))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return root, &Directory{dir: root.GetDirectory()}, nil
+	rt.root = root
+
+	return &Directory{dir: root.GetDirectory()}, nil
 }
 
-func CreateRoot(ctx context.Context, ipfs iface.CoreAPI, keys map[string]iface.Key, ipfspath, ipnspath string) (*Root, error) {
+type keyRoot struct {
+	k     ci.PrivKey
+	alias string
+	root  *mfs.Root
+}
+
+func CreateRoot(ipfs *core.IpfsNode, keys map[string]ci.PrivKey, ipfspath, ipnspath string) (*Root, error) {
 	ldirs := make(map[string]fs.Node)
-	roots := make(map[string]*mfs.Root)
+	roots := make(map[string]*keyRoot)
 	links := make(map[string]*Link)
 	for alias, k := range keys {
-		root, fsn, err := loadRoot(ctx, ipfs, k)
+		pid, err := peer.IDFromPrivateKey(k)
+		if err != nil {
+			return nil, err
+		}
+		name := pid.Pretty()
+
+		kr := &keyRoot{k: k, alias: alias}
+		fsn, err := loadRoot(ipfs.Context(), kr, ipfs, name)
 		if err != nil {
 			return nil, err
 		}
 
-		name := k.ID().String()
-
-		roots[name] = root
+		roots[name] = kr
 		ldirs[name] = fsn
 
 		// set up alias symlink
@@ -178,22 +199,25 @@ func (s *Root) Lookup(ctx context.Context, name string) (fs.Node, error) {
 
 	// other links go through ipns resolution and are symlinked into the ipfs mountpoint
 	ipnsName := "/ipns/" + name
-	resolved, err := s.Ipfs.Name().Resolve(ctx, ipnsName)
+	resolved, err := s.Ipfs.Namesys.Resolve(s.Ipfs.Context(), ipnsName)
 	if err != nil {
-		log.Warnf("ipns: namesys resolve error: %s", err)
+		log.Warningf("ipns: namesys resolve error: %s", err)
 		return nil, fuse.ENOENT
 	}
 
-	if resolved.Namespace() != "ipfs" {
-		return nil, errors.New("invalid path from ipns record")
+	segments := resolved.Segments()
+	if segments[0] == "ipfs" {
+		p := path.Join(resolved.Segments()[1:])
+		return &Link{s.IpfsRoot + "/" + p}, nil
 	}
 
-	return &Link{s.IpfsRoot + "/" + strings.TrimPrefix(resolved.String(), "/ipfs/")}, nil
+	log.Error("Invalid path.Path: ", resolved)
+	return nil, errors.New("invalid path from ipns record")
 }
 
 func (r *Root) Close() error {
 	for _, mr := range r.Roots {
-		err := mr.Close()
+		err := mr.root.Close()
 		if err != nil {
 			return err
 		}
@@ -217,8 +241,12 @@ func (r *Root) ReadDirAll(ctx context.Context) ([]fuse.Dirent, error) {
 
 	var listing []fuse.Dirent
 	for alias, k := range r.Keys {
+		pid, err := peer.IDFromPrivateKey(k)
+		if err != nil {
+			continue
+		}
 		ent := fuse.Dirent{
-			Name: k.ID().Pretty(),
+			Name: pid.Pretty(),
 			Type: fuse.DT_Dir,
 		}
 		link := fuse.Dirent{

@@ -13,7 +13,6 @@ import (
 	cidenc "github.com/ipfs/go-cidutil/cidenc"
 	cmds "github.com/ipfs/go-ipfs-cmds"
 	ipld "github.com/ipfs/go-ipld-format"
-	merkledag "github.com/ipfs/go-merkledag"
 	iface "github.com/ipfs/interface-go-ipfs-core"
 	path "github.com/ipfs/interface-go-ipfs-core/path"
 )
@@ -103,7 +102,6 @@ NOTE: List all references recursively by using the flag '-r'.
 			format = "<src> -> <dst>"
 		}
 
-		// TODO: use session for resolving as well.
 		objs, err := objectsForPaths(ctx, api, req.Arguments)
 		if err != nil {
 			return err
@@ -111,7 +109,7 @@ NOTE: List all references recursively by using the flag '-r'.
 
 		rw := RefWriter{
 			res:      res,
-			DAG:      merkledag.NewSession(ctx, api.Dag()),
+			DAG:      api.Dag(),
 			Ctx:      ctx,
 			Unique:   unique,
 			PrintFmt: format,
@@ -166,16 +164,16 @@ Displays the hashes of all local objects.
 	Type:     RefWrapper{},
 }
 
-func objectsForPaths(ctx context.Context, n iface.CoreAPI, paths []string) ([]cid.Cid, error) {
-	roots := make([]cid.Cid, len(paths))
+func objectsForPaths(ctx context.Context, n iface.CoreAPI, paths []string) ([]ipld.Node, error) {
+	objects := make([]ipld.Node, len(paths))
 	for i, sp := range paths {
-		o, err := n.ResolvePath(ctx, path.New(sp))
+		o, err := n.ResolveNode(ctx, path.New(sp))
 		if err != nil {
 			return nil, err
 		}
-		roots[i] = o.Cid()
+		objects[i] = o
 	}
-	return roots, nil
+	return objects, nil
 }
 
 type RefWrapper struct {
@@ -185,7 +183,7 @@ type RefWrapper struct {
 
 type RefWriter struct {
 	res cmds.ResponseEmitter
-	DAG ipld.NodeGetter
+	DAG ipld.DAGService
 	Ctx context.Context
 
 	Unique   bool
@@ -196,11 +194,7 @@ type RefWriter struct {
 }
 
 // WriteRefs writes refs of the given object to the underlying writer.
-func (rw *RefWriter) WriteRefs(c cid.Cid, enc cidenc.Encoder) (int, error) {
-	n, err := rw.DAG.Get(rw.Ctx, c)
-	if err != nil {
-		return 0, err
-	}
+func (rw *RefWriter) WriteRefs(n ipld.Node, enc cidenc.Encoder) (int, error) {
 	return rw.writeRefsRecursive(n, 0, enc)
 }
 

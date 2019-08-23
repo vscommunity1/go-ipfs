@@ -10,6 +10,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -112,8 +113,8 @@ func main() {
 }
 
 func setupPeer(a args) (peer.ID, pstore.Peerstore, error) {
-	if a.keybits < ci.MinRsaKeyBits {
-		return "", nil, ci.ErrRsaKeyTooSmall
+	if a.keybits < 2048 {
+		return "", nil, errors.New("bitsize less than 2048 is considered unsafe")
 	}
 
 	out("generating key pair...")

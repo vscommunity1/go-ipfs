@@ -5,20 +5,12 @@ type Environment struct {
 	// Path to the IPFS repo.
 	Repo string
 
-	// The plugin's config, if specified in the
-	// Plugins.Plugins["plugin-name"].Config field of the user's go-ipfs
-	// config. See docs/plugins.md for details.
-	//
-	// This is an arbitrary JSON-like object unmarshaled into an interface{}
-	// according to https://golang.org/pkg/encoding/json/#Unmarshal.
+	// The plugin's config, if specified.
 	Config interface{}
 }
 
-// Plugin is the base interface for all kinds of go-ipfs plugins
+// Plugin is base interface for all kinds of go-ipfs plugins
 // It will be included in interfaces of different Plugins
-//
-// Optionally, Plugins can implement io.Closer if they want to
-// have a termination step when unloading.
 type Plugin interface {
 	// Name should return unique name of the plugin
 	Name() string

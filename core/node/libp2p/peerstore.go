@@ -4,9 +4,9 @@ import (
 	"context"
 
 <<<<<<< HEAD
-	"github.com/libp2p/go-libp2p-core/peerstore"
-=======
 	"github.com/libp2p/go-libp2p-peerstore"
+=======
+	"github.com/libp2p/go-libp2p-core/peerstore"
 >>>>>>> fix: close peerstore on stop
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	"go.uber.org/fx"

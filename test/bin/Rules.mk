@@ -18,11 +18,6 @@ $(d)/go-sleep: github.com/ipfs/go-ipfs/test/dependencies/go-sleep
 	$(go-build-testdep)
 TGTS_$(d) += $(d)/go-sleep
 
-.PHONY: github.com/ipfs/go-ipfs/test/dependencies/graphsync-get
-$(d)/graphsync-get: github.com/ipfs/go-ipfs/test/dependencies/graphsync-get
-	$(go-build-testdep)
-TGTS_$(d) += $(d)/graphsync-get
-
 .PHONY: github.com/ipfs/go-ipfs/test/dependencies/go-timeout
 $(d)/go-timeout: github.com/ipfs/go-ipfs/test/dependencies/go-timeout
 	$(go-build-testdep)

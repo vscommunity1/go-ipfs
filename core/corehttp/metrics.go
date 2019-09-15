@@ -32,7 +32,6 @@ func MetricsCollectionOption(handlerName string) ServeOption {
 
 		reqCnt := prometheus.NewCounterVec(
 			prometheus.CounterOpts{
-				Namespace:   opts.Namespace,
 				Subsystem:   opts.Subsystem,
 				Name:        "requests_total",
 				Help:        "Total number of HTTP requests made.",

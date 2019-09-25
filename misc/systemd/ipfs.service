@@ -41,6 +41,7 @@ Restart=on-failure
 Description=IPFS Daemon
 
 [Service]
+Type=notify
 ExecStart=/usr/bin/ipfs daemon --init --migrate
 >>>>>>> implement systemd socket activation
 KillSignal=SIGINT

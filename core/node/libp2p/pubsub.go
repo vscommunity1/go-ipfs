@@ -17,10 +17,6 @@ func FloodSub(pubsubOptions ...pubsub.Option) interface{} {
 
 func GossipSub(pubsubOptions ...pubsub.Option) interface{} {
 	return func(mctx helpers.MetricsCtx, lc fx.Lifecycle, host host.Host, disc discovery.Discovery) (service *pubsub.PubSub, err error) {
-		return pubsub.NewGossipSub(helpers.LifecycleCtx(mctx, lc), host, append(
-			pubsubOptions,
-			pubsub.WithDiscovery(disc),
-			pubsub.WithFloodPublish(true))...,
-		)
+		return pubsub.NewGossipSub(helpers.LifecycleCtx(mctx, lc), host, append(pubsubOptions, pubsub.WithDiscovery(disc))...)
 	}
 }

@@ -46,7 +46,6 @@ func createTempRepo(ctx context.Context) (string, error) {
 		return "", err
 	}
 	
-<<<<<<< HEAD
 	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#ipfs-filestore
 	cfg.Experimental.FilestoreEnabled = true
 	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#ipfs-urlstore
@@ -57,12 +56,12 @@ func createTempRepo(ctx context.Context) (string, error) {
 	cfg.Experimental.Libp2pStreamMounting = true
 	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#p2p-http-proxy
 	cfg.Experimental.P2pHttpProxy = true
+	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#quic
+	cfg.Experimental.QUIC = true
+	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#tls-13-as-default-handshake-protocol
+	cfg.Experimental.PreferTLS = true
 	// https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#strategic-providing
 	cfg.Experimental.StrategicProviding = true
-=======
-	// Customize configuration
-	cfg.Experimental.ShardingEnabled = true
->>>>>>> Create README.md
 
 	// Create the repo with the config
 	err = fsrepo.Init(repoPath, cfg)

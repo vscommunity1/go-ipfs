@@ -200,7 +200,6 @@ func (pl *peerLogPlugin) Start(node *core.IpfsNode) error {
 
 =======
 func (*peerLogPlugin) Init(*plugin.Environment) error {
-	fmt.Println("peerLogPlugin enabled - PeerIDs will be logged")
 	return nil
 }
 

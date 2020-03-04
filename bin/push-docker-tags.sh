@@ -93,8 +93,8 @@ elif [ "$GIT_BRANCH" = "master" ]; then
 if [[ $GIT_TAG =~ ^v[0-9]+ ]]; then 
   pushTag "$GIT_TAG"
 
-elif [[ $GIT_TAG =~ ^cluster ]]; then 
-  pushTag "$GIT_TAG"
+elif [[ $GIT_BRANCH =~ ^cluster ]]; then 
+  pushTag "$GIT_BRANCH"
 
 elif [ "$GIT_BRANCH" = "feat/stabilize-dht" ]; then 
   pushTag "bifrost-${BUILD_NUM}-${GIT_SHA1_SHORT}"

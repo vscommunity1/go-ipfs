@@ -16,6 +16,7 @@
 #
 # Example:
 #   # dry run. pass a 5th arg to have it print what it would do rather than do it.
+<<<<<<< HEAD
 #   ./push-docker-tags.sh $(date -u +%F) testingsha master "" dryrun
 #    
 #   # push tag for the master branch
@@ -26,6 +27,18 @@
 #
 #   # Serving suggestion in circle ci - https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
 #   ./push-docker-tags.sh $(date -u +%F) "$CIRCLE_SHA1" "$CIRCLE_BRANCH" "$CIRCLE_TAG"
+=======
+#   ./push-docker-tags.sh 1 testingsha mybranch v1.0 dryrun
+#    
+#   # push tag for the master branch
+#   ./push-docker-tags.sh 1 testingsha master
+#
+#   # push tag for a release tag
+#   ./push-docker-tags.sh 1 testingsha release v0.5.0
+#
+#   # Surving suggestion in circle ci - https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
+#   ./push-docker-tags.sh "$CIRCLE_BUILD_NUM" "$CIRCLE_SHA1" "$CIRCLE_BRANCH" "$CIRCLE_TAG"
+>>>>>>> feat: docker build and tag from ci
 #
 set -euo pipefail
 
@@ -51,14 +64,20 @@ pushTag () {
   if [ "$DRY_RUN" != false ]; then
     echo "DRY RUN! I would have tagged and pushed the following..."
     echo docker tag "$IMAGE_NAME:$WIP_IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG"
+<<<<<<< HEAD
     echo docker push "$IMAGE_NAME:$IMAGE_TAG"
   else
     echo "Tagging $IMAGE_NAME:$IMAGE_TAG and pushing to dockerhub"
+=======
+    echo docker push "$IMAGE_NAME:$IMAGE_TAG"  
+  else 
+>>>>>>> feat: docker build and tag from ci
     docker tag "$IMAGE_NAME:$WIP_IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG"
     docker push "$IMAGE_NAME:$IMAGE_TAG"
   fi
 }
 
+<<<<<<< HEAD
 if [[ $GIT_TAG =~ ^v[0-9]+ ]]; then
   pushTag "$GIT_TAG"
   pushTag "latest"
@@ -70,6 +89,23 @@ elif [ "$GIT_BRANCH" = "feat/stabilize-dht" ]; then
 elif [ "$GIT_BRANCH" = "master" ]; then
   pushTag "master-${BUILD_NUM}-${GIT_SHA1_SHORT}"
   pushTag "master-latest"
+=======
+if [[ $GIT_TAG =~ ^v[0-9]+ ]]; then 
+  pushTag "$GIT_TAG"
+
+elif [[ $GIT_TAG =~ ^cluster ]]; then 
+  pushTag "$GIT_TAG"
+
+elif [ "$GIT_BRANCH" = "feat/stabilize-dht" ]; then 
+  pushTag "bifrost-${BUILD_NUM}-${GIT_SHA1_SHORT}"
+
+elif [ "$GIT_BRANCH" = "release" ]; then 
+  pushTag "release"
+  pushTag "latest"
+
+elif [ "$GIT_BRANCH" = "master" ]; then 
+  pushTag "master"
+>>>>>>> feat: docker build and tag from ci
 
 else
   echo "Nothing to do. No docker tag defined for branch: $GIT_BRANCH, tag: $GIT_TAG"

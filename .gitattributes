@@ -9,7 +9,6 @@ LICENSE text eol=auto
 *.png binary
 *.tar binary
 *.gz binary
-*.xz binary
 *.car binary
 
 # Binary assets

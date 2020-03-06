@@ -93,9 +93,6 @@ elif [ "$GIT_BRANCH" = "master" ]; then
 if [[ $GIT_TAG =~ ^v[0-9]+ ]]; then 
   pushTag "$GIT_TAG"
 
-elif [[ $GIT_BRANCH =~ ^cluster ]]; then 
-  pushTag "$GIT_BRANCH"
-
 elif [ "$GIT_BRANCH" = "feat/stabilize-dht" ]; then 
   pushTag "bifrost-${BUILD_NUM}-${GIT_SHA1_SHORT}"
   pushTag "bifrost-latest"
@@ -105,6 +102,7 @@ elif [ "$GIT_BRANCH" = "release" ]; then
   pushTag "latest"
 
 elif [ "$GIT_BRANCH" = "master" ]; then 
+  pushTag "master-${BUILD_NUM}-${GIT_SHA1_SHORT}"
   pushTag "master"
 >>>>>>> feat: docker build and tag from ci
 

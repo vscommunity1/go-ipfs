@@ -4,61 +4,49 @@ import (
 	"context"
 
 	"github.com/ipfs/go-datastore"
+	nilrouting "github.com/ipfs/go-ipfs-routing/none"
 	host "github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
-	dual "github.com/libp2p/go-libp2p-kad-dht/dual"
 	record "github.com/libp2p/go-libp2p-record"
-	routinghelpers "github.com/libp2p/go-libp2p-routing-helpers"
 )
 
-type RoutingOption func(
-	context.Context,
-	host.Host,
-	datastore.Batching,
-	record.Validator,
-	...peer.AddrInfo,
-) (routing.Routing, error)
+var baseDhtOptions = []dht.Option{
+	dht.Concurrency(10),
+	// TODO: Enable this once we have the dual-DHTs. At the moment, this
+	// will break DHTs on private IP addresses (VPNs, etc.).
+	//dht.RoutingTableFilter(dht.PublicRoutingTableFilter),
+	//dht.QueryFilter(dht.PublicQueryFilter),
+}
 
-func constructDHTRouting(mode dht.ModeOpt) func(
-	ctx context.Context,
-	host host.Host,
-	dstore datastore.Batching,
-	validator record.Validator,
-	bootstrapPeers ...peer.AddrInfo,
-) (routing.Routing, error) {
-	return func(
-		ctx context.Context,
-		host host.Host,
-		dstore datastore.Batching,
-		validator record.Validator,
-		bootstrapPeers ...peer.AddrInfo,
-	) (routing.Routing, error) {
-		return dual.New(
-			ctx, host,
-			dht.Concurrency(10),
-			dht.Mode(mode),
+type RoutingOption func(context.Context, host.Host, datastore.Batching, record.Validator) (routing.Routing, error)
+
+func constructDHTRouting(ctx context.Context, host host.Host, dstore datastore.Batching, validator record.Validator) (routing.Routing, error) {
+	return dht.New(
+		ctx, host,
+		append([]dht.Option{
+			// TODO: switch to "auto" when we add dual-dht support.
+			// Unfortunately, we can't set this to auto yet or
+			// nobody will become a server when everyone is running
+			// on a private network.
+			dht.Mode(dht.ModeServer),
 			dht.Datastore(dstore),
 			dht.Validator(validator),
-			dht.BootstrapPeers(bootstrapPeers...),
-		)
-	}
+		}, baseDhtOptions...)...,
+	)
 }
 
-func constructNilRouting(
-	ctx context.Context,
-	host host.Host,
-	dstore datastore.Batching,
-	validator record.Validator,
-	bootstrapPeers ...peer.AddrInfo,
-) (routing.Routing, error) {
-	return routinghelpers.Null{}, nil
+func constructClientDHTRouting(ctx context.Context, host host.Host, dstore datastore.Batching, validator record.Validator) (routing.Routing, error) {
+	return dht.New(
+		ctx, host,
+		append([]dht.Option{
+			dht.Mode(dht.ModeClient),
+			dht.Datastore(dstore),
+			dht.Validator(validator),
+		}, baseDhtOptions...)...,
+	)
 }
 
-var (
-	DHTOption       RoutingOption = constructDHTRouting(dht.ModeAuto)
-	DHTClientOption               = constructDHTRouting(dht.ModeClient)
-	DHTServerOption               = constructDHTRouting(dht.ModeServer)
-	NilRouterOption               = constructNilRouting
-)
+var DHTOption RoutingOption = constructDHTRouting
+var DHTClientOption RoutingOption = constructClientDHTRouting
+var NilRouterOption RoutingOption = nilrouting.ConstructNilRouting

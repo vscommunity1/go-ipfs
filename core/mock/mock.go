@@ -90,8 +90,7 @@ func MockPublicNode(ctx context.Context, mn mocknet.Mocknet) (*core.IpfsNode, er
 	}
 	cfg.Datastore = config.Datastore{}
 	return core.NewNode(ctx, &core.BuildCfg{
-		Online:  true,
-		Routing: libp2p2.DHTServerOption,
+		Online: true,
 		Repo: &repo.Mock{
 			C: *cfg,
 			D: ds,

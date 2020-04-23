@@ -95,6 +95,7 @@ require (
 	github.com/libp2p/go-libp2p-yamux v0.2.8
 >>>>>>> chore: update libp2p deps
 	github.com/libp2p/go-socket-activation v0.0.2
+	github.com/libp2p/go-ws-transport v0.3.1 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/mitchellh/go-homedir v1.1.0

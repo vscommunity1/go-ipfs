@@ -1,21 +1,5 @@
-<<<<<<< HEAD
-# This file will be overwritten on package upgrades, avoid customizations here.
-#
-# To make persistant changes, create file in 
-# "/etc/systemd/system/ipfs.service.d/overwrite.conf" with 
-# `systemctl edit ipfs.service`. This file will be parsed after this 
-# file has been parsed.
-#
-# To overwrite a variable, like ExecStart you have to specify it once
-# blank and a second time with a new value, like:
-# ExecStart=
-# ExecStart=/usr/bin/ipfs daemon --flag1 --flag2
-#
-# For more info about custom unit files see systemd.unit(5).
-
 [Unit]
 Description=InterPlanetary File System (IPFS) daemon
-Documentation=https://docs.ipfs.io/
 After=network.target
 
 [Service]
@@ -27,23 +11,12 @@ After=network.target
 # enable to specify a higher limit for open files/connections
 #LimitNOFILE=1000000
 
-#don't use swap
-MemorySwapMax=0
-
 Type=notify
 User=ipfs
 Group=ipfs
-StateDirectory=ipfs
+WorkingDirectory=/var/lib/ipfs
 ExecStart=/usr/bin/ipfs daemon --init --migrate
 Restart=on-failure
-=======
-[Unit]
-Description=IPFS Daemon
-
-[Service]
-Type=notify
-ExecStart=/usr/bin/ipfs daemon --init --migrate
->>>>>>> implement systemd socket activation
 KillSignal=SIGINT
 
 [Install]

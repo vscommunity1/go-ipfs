@@ -1,5 +1,6 @@
 package peering
 
+<<<<<<< HEAD
 import (
 	"context"
 	"testing"
@@ -155,4 +156,9 @@ func TestNextBackoff(t *testing.T) {
 			}
 		}
 	}
+=======
+import "testing"
+
+func TestPeeringService(t *testing.T) {
+>>>>>>> feat: implement peering service
 }

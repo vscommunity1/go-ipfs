@@ -48,8 +48,24 @@ func NewNode(ctx context.Context, cfg *BuildCfg) (*IpfsNode, error) {
 		}
 	}()
 
+<<<<<<< HEAD
 	if app.Err() != nil {
 		return nil, app.Err()
+=======
+	if cfg.Online {
+		do := setupDiscoveryOption(rcfg.Discovery)
+		pubsub := cfg.getOpt("pubsub")
+		ipnsps := cfg.getOpt("ipnsps")
+		mplex := cfg.getOpt("mplex")
+		follow := cfg.getOpt("follow")
+		if err := n.startOnlineServices(ctx, cfg.Routing, hostOption, do, pubsub, ipnsps, mplex, follow); err != nil {
+			return err
+		}
+	} else {
+		n.Exchange = offline.Exchange(n.Blockstore)
+		n.Routing = offroute.NewOfflineRouter(n.Repo.Datastore(), n.RecordValidator)
+		n.Namesys = namesys.NewNameSystem(n.Routing, n.Repo.Datastore(), 0)
+>>>>>>> origin/feat/ipns-follow
 	}
 
 	if err := app.Start(ctx); err != nil {

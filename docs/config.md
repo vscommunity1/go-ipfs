@@ -12,50 +12,82 @@ applied with `--profile` flag to `ipfs init` or with the `ipfs config profile
 apply` command. When a profile is applied a backup of the configuration file
 will be created in `$IPFS_PATH`.
 
-Available profiles:
+The available configuration profiles are listed below. You can also find them
+documented in `ipfs config profile --help`.
 
 - `server`
 
-  Recommended for nodes with public IPv4 address (servers, VPSes, etc.),
-  disables host and content discovery in local networks.
-
-- `local-discovery`
-
-  Sets default values to fields affected by `server` profile, enables
-  discovery in local networks.
-
-- `test`
-
-  Reduces external interference, useful for running ipfs in test environments.
-  Note that with these settings node won't be able to talk to the rest of the
-  network without manual bootstrap.
-
-- `default-networking`
-
-  Restores default network settings. Inverse profile of the `test` profile.
-
-- `badgerds`
-
-  Replaces default datastore configuration with experimental badger datastore.
-  If you apply this profile after `ipfs init`, you will need to convert your
-  datastore to the new configuration. You can do this using
-  [ipfs-ds-convert](https://github.com/ipfs/ipfs-ds-convert)
-
-  WARNING: badger datastore is experimental. Make sure to backup your data
-  frequently.
-
-- `default-datastore`
-
-  Restores default datastore configuration.
-
-- `lowpower`
-
-  Reduces daemon overhead on the system. May affect node functionality,
-  performance of content discovery and data fetching may be degraded.
+  Disables local host discovery, recommended when
+  running IPFS on machines with public IPv4 addresses.
 
 - `randomports`
 
-  Generate random port for swarm.
+  Use a random port number for swarm.
+
+- `default-datastore`
+
+  Configures the node to use the default datastore (flatfs).
+
+  Read the "flatfs" profile description for more information on this datastore.
+
+  This profile may only be applied when first initializing the node.
+
+- `local-discovery`
+
+  Sets default values to fields affected by the server
+  profile, enables discovery in local networks.
+
+- `test`
+
+  Reduces external interference of IPFS daemon, this
+  is useful when using the daemon in test environments.
+
+- `default-networking`
+
+  Restores default network settings.
+  Inverse profile of the test profile.
+
+- `flatfs`
+
+  Configures the node to use the flatfs datastore.
+
+  This is the most battle-tested and reliable datastore, but it's significantly
+  slower than the badger datastore. You should use this datastore if:
+
+  - You need a very simple and very reliable datastore you and trust your
+    filesystem. This datastore stores each block as a separate file in the
+    underlying filesystem so it's unlikely to loose data unless there's an issue
+    with the underlying file system.
+  - You need to run garbage collection on a small (<= 10GiB) datastore. The
+    default datastore, badger, can leave several gigabytes of data behind when
+    garbage collecting.
+  - You're concerned about memory usage. In its default configuration, badger can
+    use up to several gigabytes of memory.
+
+  This profile may only be applied when first initializing the node.
+
+
+- `badgerds`
+
+  Configures the node to use the badger datastore.
+
+  This is the fastest datastore. Use this datastore if performance, especially
+  when adding many gigabytes of files, is critical. However:
+
+  - This datastore will not properly reclaim space when your datastore is
+    smaller than several gigabytes. If you run IPFS with '--enable-gc' (you have
+    enabled block-level garbage collection), you plan on storing very little data in
+    your IPFS node, and disk usage is more critical than performance, consider using
+    flatfs.
+  - This datastore uses up to several gigabytes of memory. 
+
+  This profile may only be applied when first initializing the node.
+
+- `lowpower`
+
+  Reduces daemon overhead on the system. May affect node
+  functionality - performance of content discovery and data
+  fetching may be degraded.
 
 ## Table of Contents
 
@@ -67,6 +99,12 @@ Available profiles:
     - [`Addresses.NoAnnounce`](#addressesnoannounce)
 - [`API`](#api)
     - [`API.HTTPHeaders`](#apihttpheaders)
+- [`AutoNAT`](#autonat)
+    - [`AutoNAT.ServiceMode`](#autonatservicemode)
+    - [`AutoNAT.Throttle`](#autonatthrottle)
+    - [`AutoNAT.Throttle.GlobalLimit`](#autonatthrottlegloballimit)
+    - [`AutoNAT.Throttle.PeerLimit`](#autonatthrottlepeerlimit)
+    - [`AutoNAT.Throttle.Interval`](#autonatthrottleinterval)
 - [`Bootstrap`](#bootstrap)
 - [`Datastore`](#datastore)
     - [`Datastore.StorageMax`](#datastorestoragemax)
@@ -79,8 +117,6 @@ Available profiles:
     - [`Discovery.MDNS`](#discoverymdns)
         - [`Discovery.MDNS.Enabled`](#discoverymdnsenabled)
         - [`Discovery.MDNS.Interval`](#discoverymdnsinterval)
-- [`Routing`](#routing)
-    - [`Routing.Type`](#routingtype)
 - [`Gateway`](#gateway)
     - [`Gateway.NoFetch`](#gatewaynofetch)
     - [`Gateway.NoDNSLink`](#gatewaynodnslink)
@@ -89,7 +125,6 @@ Available profiles:
     - [`Gateway.Writable`](#gatewaywritable)
     - [`Gateway.PathPrefixes`](#gatewaypathprefixes)
     - [`Gateway.PublicGateways`](#gatewaypublicgateways)
-    - [`Gateway` recipes](#gateway-recipes)
 - [`Identity`](#identity)
     - [`Identity.PeerID`](#identitypeerid)
     - [`Identity.PrivKey`](#identityprivkey)
@@ -101,9 +136,16 @@ Available profiles:
     - [`Mounts.IPFS`](#mountsipfs)
     - [`Mounts.IPNS`](#mountsipns)
     - [`Mounts.FuseAllowOther`](#mountsfuseallowother)
+- [`Pubsub`](#pubsub)
+    - [`Pubsub.Router`](#pubsubrouter)
+    - [`Pubsub.DisableSigning`](#pubsubdisablesigning)
+    - [`Peering`](#peering)
+        - [`Peering.Peers`](#peeringpeers)
 - [`Reprovider`](#reprovider)
     - [`Reprovider.Interval`](#reproviderinterval)
     - [`Reprovider.Strategy`](#reproviderstrategy)
+- [`Routing`](#routing)
+    - [`Routing.Type`](#routingtype)
 - [`Swarm`](#swarm)
     - [`Swarm.AddrFilters`](#swarmaddrfilters)
     - [`Swarm.DisableBandwidthMetrics`](#swarmdisablebandwidthmetrics)
@@ -111,12 +153,12 @@ Available profiles:
     - [`Swarm.DisableRelay`](#swarmdisablerelay)
     - [`Swarm.EnableRelayHop`](#swarmenablerelayhop)
     - [`Swarm.EnableAutoRelay`](#swarmenableautorelay)
-    - [`Swarm.EnableAutoNATService`](#swarmenableautonatservice)
     - [`Swarm.ConnMgr`](#swarmconnmgr)
         - [`Swarm.ConnMgr.Type`](#swarmconnmgrtype)
         - [`Swarm.ConnMgr.LowWater`](#swarmconnmgrlowwater)
         - [`Swarm.ConnMgr.HighWater`](#swarmconnmgrhighwater)
         - [`Swarm.ConnMgr.GracePeriod`](#swarmconnmgrgraceperiod)
+
 
 ## `Addresses`
 
@@ -161,7 +203,9 @@ Default:
 ```json
 [
   "/ip4/0.0.0.0/tcp/4001",
-  "/ip6/::/tcp/4001"
+  "/ip6/::/tcp/4001",
+  "/ip6/0.0.0.0/udp/4001/quic",
+  "/ip6/::/udp/4001/quic"
 ]
 ```
 
@@ -355,48 +399,6 @@ Default: `true`
 
 A number of seconds to wait between discovery checks.
 
-## `Routing`
-
-Contains options for content, peer, and IPNS routing mechanisms.
-
-### `Routing.Type`
-
-Content routing mode. Can be overridden with daemon `--routing` flag.
-
-There are two core routing options: "none" and "dht" (default).
-
-* If set to "none", your node will use _no_ routing system. You'll have to
-  explicitly connect to peers that have the content you're looking for.
-* If set to "dht" (or "dhtclient"/"dhtserver"), your node will use the IPFS DHT.
-
-When the DHT is enabled, it can operate in two modes: client and server.
-
-* In server mode, your node will query other peers for DHT records, and will
-  respond to requests from other peers (both requests to store records and
-  requests to retrieve records).
-* In client mode, your node will query the DHT as a client but will not respond
-  to requests from other peers. This mode is less resource intensive than server
-  mode.
-
-When `Routing.Type` is set to `dht`, your node will start as a DHT client, and
-switch to a DHT server when and if it determines that it's reachable from the
-public internet (e.g., it's not behind a firewall).
-
-To force a specific DHT mode, client or server, set `Routing.Type` to
-`dhtclient` or `dhtserver` respectively. Please do not set this to `dhtserver`
-unless you're sure your node is reachable from the public network.
-  
-**Example:**
-
-```json
-{
-  "Routing": {
-    "Type": "dhtclient"
-  }
-}
-```  
-  
-
 ## `Gateway`
 
 Options for the HTTP gateway.
@@ -462,6 +464,7 @@ Example: We mount `blog.ipfs.io` (a dnslink page) at `ipfs.io/blog`.
 ```json
 "Gateway": {
   "PathPrefixes": ["/blog"],
+}
 ```
 
 **nginx_ipfs.conf**
@@ -492,6 +495,10 @@ Example:
     "PublicGateways": {
       "example.com": {
         "Paths": ["/ipfs", "/ipns"],
+      }
+    }
+  }
+}
 ```
 
 Above enables `http://example.com/ipfs/*` and `http://example.com/ipns/*` but not `http://example.com/api/*`
@@ -503,29 +510,33 @@ Default: `[]`
 A boolean to configure whether the gateway at the hostname provides [Origin isolation](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy)
 between content roots.
 
-- `true` - enables [subdomain gateway](#https://docs-beta.ipfs.io/how-to/address-ipfs-on-web/#subdomain-gateway) at `http://*.{hostname}/`
+- `true` - enables [subdomain gateway](#https://docs.ipfs.io/how-to/address-ipfs-on-web/#subdomain-gateway) at `http://*.{hostname}/`
     - **Requires whitelist:** make sure respective `Paths` are set.
     For example, `Paths: ["/ipfs", "/ipns"]` are required for `http://{cid}.ipfs.{hostname}` and `http://{foo}.ipns.{hostname}` to work:
         ```json
-        {
         "Gateway": {
             "PublicGateways": {
-            "dweb.link": {
-                "UseSubdomains": true,
-                "Paths": ["/ipfs", "/ipns"],
+                "dweb.link": {
+                    "UseSubdomains": true,
+                    "Paths": ["/ipfs", "/ipns"],
+                }
+            }
+        }
         ```
     - **Backward-compatible:** requests for content paths such as `http://{hostname}/ipfs/{cid}` produce redirect to `http://{cid}.ipfs.{hostname}`
     - **API:** if `/api` is on the `Paths` whitelist, `http://{hostname}/api/{cmd}` produces redirect to `http://api.{hostname}/api/{cmd}`
 
-- `false` - enables [path gateway](https://docs-beta.ipfs.io/how-to/address-ipfs-on-web/#path-gateway) at `http://{hostname}/*`
+- `false` - enables [path gateway](https://docs.ipfs.io/how-to/address-ipfs-on-web/#path-gateway) at `http://{hostname}/*`
   - Example:
     ```json
-    {
     "Gateway": {
         "PublicGateways": {
-        "ipfs.io": {
-            "UseSubdomains": false,
-            "Paths": ["/ipfs", "/ipns", "/api"],
+            "ipfs.io": {
+                "UseSubdomains": false,
+                "Paths": ["/ipfs", "/ipns", "/api"],
+            }
+        }
+    }
     ```
 <!-- **(not implemented yet)** due to the lack of Origin isolation, cookies and storage on `Paths` will be disabled by [Clear-Site-Data](https://github.com/ipfs/in-web-browsers/issues/157) header -->
 
@@ -569,7 +580,7 @@ $ ipfs config --json Gateway.PublicGateways '{"localhost": null }'
 
 Below is a list of the most common public gateway setups.
 
-* Public [subdomain gateway](https://docs-beta.ipfs.io/how-to/address-ipfs-on-web/#subdomain-gateway) at `http://{cid}.ipfs.dweb.link` (each content root gets its own Origin)
+* Public [subdomain gateway](https://docs.ipfs.io/how-to/address-ipfs-on-web/#subdomain-gateway) at `http://{cid}.ipfs.dweb.link` (each content root gets its own Origin)
    ```console
    $ ipfs config --json Gateway.PublicGateways '{
        "dweb.link": {
@@ -578,10 +589,12 @@ Below is a list of the most common public gateway setups.
        }
      }'
    ```
-   **Note:** this enables automatic redirects from content paths to subdomains  
-   `http://dweb.link/ipfs/{cid}` → `http://{cid}.ipfs.dweb.link`
+   **Note I:** this enables automatic redirects from content paths to subdomains:  
+   `http://dweb.link/ipfs/{cid}` → `http://{cid}.ipfs.dweb.link`  
+   **Note II:** if you run go-ipfs behind a reverse proxy that provides TLS, make it adds a `X-Forwarded-Proto: https` HTTP header to ensure users are redirected to `https://`, not `http://`. The NGINX directive is `proxy_set_header X-Forwarded-Proto "https";`.:    
+   `https://dweb.link/ipfs/{cid}` → `https://{cid}.ipfs.dweb.link`
 
-* Public [path gateway](https://docs-beta.ipfs.io/how-to/address-ipfs-on-web/#path-gateway) at `http://ipfs.io/ipfs/{cid}` (no Origin separation)
+* Public [path gateway](https://docs.ipfs.io/how-to/address-ipfs-on-web/#path-gateway) at `http://ipfs.io/ipfs/{cid}` (no Origin separation)
    ```console
    $ ipfs config --json Gateway.PublicGateways '{
        "ipfs.io": {
@@ -597,7 +610,7 @@ Below is a list of the most common public gateway setups.
   ```
   * Note that `NoDNSLink: false` is the default (it works out of the box unless set to `true` manually)
 
-* Hardened, site-specific [DNSLink gateway](https://docs-beta.ipfs.io/how-to/address-ipfs-on-web/#dnslink-gateway).  
+* Hardened, site-specific [DNSLink gateway](https://docs.ipfs.io/how-to/address-ipfs-on-web/#dnslink-gateway).  
   Disable fetching of remote data (`NoFetch: true`)
   and resolving DNSLink at unknown hostnames (`NoDNSLink: true`).
   Then, enable DNSLink gateway only for the specific hostname (for which data
@@ -664,6 +677,85 @@ Mountpoint for `/ipns/`.
 
 Sets the FUSE allow other option on the mountpoint.
 
+## `Pubsub`
+
+Pubsub configures the `ipfs pubsub` subsystem. To use, it must be enabled by
+passing the `--enable-pubsub-experiment` flag to the daemon.
+
+### `Pubsub.Router`
+
+Sets the default router used by pubsub to route messages to peers. This can be one of:
+
+* `"floodsub"` - floodsub is a basic router that simply _floods_ messages to all
+  connected peers. This router is extremely inefficient but _very_ reliable.
+* `"gossipsub"` - [gossipsub][] is a more advanced routing algorithm that will
+  build an overlay mesh from a subset of the links in the network.
+  
+Default: `"gossipsub"`
+
+[gossipsub]: https://github.com/libp2p/specs/tree/master/pubsub/gossipsub
+
+### `Pubsub.DisableSigning`
+
+Disables message signing and signature verification. Enable this option if
+you're operating in a completely trusted network.
+
+It is _not_ safe to disable signing even if you don't care _who_ sent the
+message because spoofed messages can be used to silence real messages by
+intentionally re-using the real message's message ID.
+
+Default: `false`
+
+### `Peering`
+
+Configures the peering subsystem. The peering subsystem configures go-ipfs to
+connect to, remain connected to, and reconnect to a set of nodes. Nodes should
+use this subsystem to create "sticky" links between frequently useful peers to
+improve reliability.
+
+Use-cases:
+
+* An IPFS gateway connected to an IPFS cluster should peer to ensure that the
+  gateway can always fetch content from the cluster.
+* A dapp may peer embedded go-ipfs nodes with a set of pinning services or
+  textile cafes/hubs.
+* A set of friends may peer to ensure that they can always fetch each other's
+  content.
+
+When a node is added to the set of peered nodes, go-ipfs will:
+
+1. Protect connections to this node from the connection manager. That is,
+   go-ipfs will never automatically close the connection to this node and
+   connections to this node will not count towards the connection limit.
+2. Connect to this node on startup.
+3. Repeatedly try to reconnect to this node if the last connection dies or the
+   node goes offline. This repeated re-connect logic is governed by a randomized
+   exponential backoff delay ranging from ~5 seconds to ~10 minutes to avoid
+   repeatedly reconnect to a node that's offline.
+
+Peering can be asymmetric or symmetric:
+
+* When symmetric, the connection will be protected by both nodes and will likely
+  be vary stable.
+* When asymmetric, only one node (the node that configured peering) will protect
+  the connection and attempt to re-connect to the peered node on disconnect. If
+  the peered node is under heavy load and/or has a low connection limit, the
+  connection may flap repeatedly. Be careful when asymmetrically peering to not
+  overload peers.
+
+#### `Peering.Peers`
+
+The set of peers with which to peer. Each entry is of the form:
+
+```js
+{
+  "ID": "QmSomePeerID", # The peers ID.
+  "Addrs": ["/ip4/1.2.3.4/tcp/1234"] # Known addresses for the peer. If none are specified, the DHT will be queried.
+}
+```
+
+Additional fields may be added in the future.
+
 ## `Reprovider`
 
 ### `Reprovider.Interval`
@@ -683,6 +775,48 @@ Tells reprovider what should be announced. Valid strategies are:
   - "all" (default) - announce all stored data
   - "pinned" - only announce pinned data
   - "roots" - only announce directly pinned keys and root keys of recursive pins
+
+## `Routing`
+
+Contains options for content, peer, and IPNS routing mechanisms.
+
+### `Routing.Type`
+
+Content routing mode. Can be overridden with daemon `--routing` flag.
+
+There are two core routing options: "none" and "dht" (default).
+
+* If set to "none", your node will use _no_ routing system. You'll have to
+  explicitly connect to peers that have the content you're looking for.
+* If set to "dht" (or "dhtclient"/"dhtserver"), your node will use the IPFS DHT.
+
+When the DHT is enabled, it can operate in two modes: client and server.
+
+* In server mode, your node will query other peers for DHT records, and will
+  respond to requests from other peers (both requests to store records and
+  requests to retrieve records).
+* In client mode, your node will query the DHT as a client but will not respond
+  to requests from other peers. This mode is less resource intensive than server
+  mode.
+
+When `Routing.Type` is set to `dht`, your node will start as a DHT client, and
+switch to a DHT server when and if it determines that it's reachable from the
+public internet (e.g., it's not behind a firewall).
+
+To force a specific DHT mode, client or server, set `Routing.Type` to
+`dhtclient` or `dhtserver` respectively. Please do not set this to `dhtserver`
+unless you're sure your node is reachable from the public network.
+  
+**Example:**
+
+```json
+{
+  "Routing": {
+    "Type": "dhtclient"
+  }
+}
+```  
+  
 
 ## `Swarm`
 
@@ -720,24 +854,41 @@ go-ipfs node accessible from the public internet.
 
 ### `Swarm.DisableRelay`
 
-Disables the p2p-circuit relay transport.
+Disables the p2p-circuit relay transport. This will prevent this node from
+connecting to nodes behind relays, or accepting connections from nodes behind
+relays.
 
 ### `Swarm.EnableRelayHop`
 
-Enables HOP relay for the node.
+Configures this node to act as a relay "hop". A relay "hop" relays traffic for other peers.
 
-If this is enabled, the node will act as an intermediate (Hop Relay) node in
-relay circuits for connected peers.
+WARNING: Do not enable this option unless you know what you're doing. Other
+peers will randomly decide to use your node as a relay and consume _all_
+available bandwidth. There is _no_ rate-limiting.
 
 ### `Swarm.EnableAutoRelay`
 
-Enables automatic relay for this node.
+Enables "automatic relay" mode for this node. This option does two _very_
+different things based on the `Swarm.EnableRelayHop`. See
+[#7228](https://github.com/ipfs/go-ipfs/issues/7228) for context.
 
-If the node is a HOP relay (`EnableRelayHop` is true) then it will advertise
-itself as a relay through the DHT. Otherwise, the node will test its own NAT
-situation (dialability) using passively discovered AutoNAT services. If the node
-is not publicly reachable, then it will seek HOP relays advertised through the
-DHT and override its public address(es) with relay addresses.
+#### Mode 1: `EnableRelayHop` is `false`
+
+If `Swarm.EnableAutoRelay` is enabled and `Swarm.EnableRelayHop` is disabled,
+your node will automatically _use_ public relays from the network if it detects
+that it cannot be reached from the public internet (e.g., it's behind a
+firewall). This is likely the feature you're looking for.
+
+If you enable `EnableAutoRelay`, you should almost certainly disable
+`EnableRelayHop`.
+
+#### Mode 2: `EnableRelayHop` is `true`
+
+If `EnableAutoRelay` is enabled and `EnableRelayHop` is enabled, your node will
+_act_ as a public relay for the network. Furthermore, in addition to simply
+relaying traffic, your node will advertise itself as a public relay. Unless you
+have the bandwidth of a small ISP, do not enable both of these options at the
+same time.
 
 ### `Swarm.EnableAutoNATService`
 

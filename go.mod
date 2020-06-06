@@ -15,17 +15,10 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/golang-lru v0.5.4
-<<<<<<< HEAD
-	github.com/ipfs/go-bitswap v0.2.14
-	github.com/ipfs/go-block-format v0.0.2
-	github.com/ipfs/go-blockservice v0.1.3
-	github.com/ipfs/go-cid v0.0.5
-=======
 	github.com/ipfs/go-bitswap v0.2.15
 	github.com/ipfs/go-block-format v0.0.2
 	github.com/ipfs/go-blockservice v0.1.3
 	github.com/ipfs/go-cid v0.0.6
->>>>>>> master
 	github.com/ipfs/go-cidutil v0.0.2
 	github.com/ipfs/go-datastore v0.4.4
 	github.com/ipfs/go-detect-race v0.0.1
@@ -34,20 +27,12 @@ require (
 	github.com/ipfs/go-ds-leveldb v0.4.2
 	github.com/ipfs/go-ds-measure v0.1.0
 	github.com/ipfs/go-filestore v0.0.3
-<<<<<<< HEAD
-	github.com/ipfs/go-fs-lock v0.0.4
-=======
 	github.com/ipfs/go-fs-lock v0.0.5
->>>>>>> master
 	github.com/ipfs/go-graphsync v0.0.5
 	github.com/ipfs/go-ipfs-blockstore v0.1.4
 	github.com/ipfs/go-ipfs-chunker v0.0.5
 	github.com/ipfs/go-ipfs-cmds v0.2.9
-<<<<<<< HEAD
-	github.com/ipfs/go-ipfs-config v0.7.0
-=======
-	github.com/ipfs/go-ipfs-config v0.7.1
->>>>>>> master
+	github.com/ipfs/go-ipfs-config v0.7.2
 	github.com/ipfs/go-ipfs-ds-help v0.1.1
 	github.com/ipfs/go-ipfs-exchange-interface v0.0.1
 	github.com/ipfs/go-ipfs-exchange-offline v0.0.1
@@ -65,26 +50,12 @@ require (
 	github.com/ipfs/go-merkledag v0.3.2
 	github.com/ipfs/go-metrics-interface v0.0.1
 	github.com/ipfs/go-metrics-prometheus v0.0.2
-<<<<<<< HEAD
-	github.com/ipfs/go-mfs v0.1.1
-=======
 	github.com/ipfs/go-mfs v0.1.2
->>>>>>> master
 	github.com/ipfs/go-path v0.0.7
 	github.com/ipfs/go-unixfs v0.2.4
 	github.com/ipfs/go-verifcid v0.0.1
 	github.com/ipfs/interface-go-ipfs-core v0.3.0
 	github.com/ipld/go-car v0.1.0
-<<<<<<< HEAD
-	github.com/jbenet/go-is-domain v1.0.3
-	github.com/jbenet/go-random v0.0.0-20190219211222-123a90aedc0c
-	github.com/jbenet/go-temp-err-catcher v0.1.0
-	github.com/jbenet/goprocess v0.1.4
-	github.com/libp2p/go-libp2p v0.8.3
-	github.com/libp2p/go-libp2p-circuit v0.2.2
-	github.com/libp2p/go-libp2p-connmgr v0.2.1
-	github.com/libp2p/go-libp2p-core v0.5.3
-=======
 	github.com/jbenet/go-is-domain v1.0.5
 	github.com/jbenet/go-random v0.0.0-20190219211222-123a90aedc0c
 	github.com/jbenet/go-temp-err-catcher v0.1.0
@@ -93,34 +64,12 @@ require (
 	github.com/libp2p/go-libp2p-circuit v0.2.3
 	github.com/libp2p/go-libp2p-connmgr v0.2.3
 	github.com/libp2p/go-libp2p-core v0.5.6
->>>>>>> master
 	github.com/libp2p/go-libp2p-discovery v0.4.0
 	github.com/libp2p/go-libp2p-http v0.1.5
 	github.com/libp2p/go-libp2p-kad-dht v0.8.1
 	github.com/libp2p/go-libp2p-kbucket v0.4.2
 	github.com/libp2p/go-libp2p-loggables v0.1.0
 	github.com/libp2p/go-libp2p-mplex v0.2.3
-<<<<<<< HEAD
-	github.com/libp2p/go-libp2p-peerstore v0.2.3
-	github.com/libp2p/go-libp2p-pubsub v0.2.7
-	github.com/libp2p/go-libp2p-pubsub-router v0.2.1
-<<<<<<< HEAD
-	github.com/libp2p/go-libp2p-quic-transport v0.3.7
-=======
-	github.com/libp2p/go-libp2p-quic-transport v0.3.6
->>>>>>> update go-libp2p-quic-transport to v0.3.6
-	github.com/libp2p/go-libp2p-record v0.1.2
-	github.com/libp2p/go-libp2p-routing-helpers v0.2.3
-	github.com/libp2p/go-libp2p-secio v0.2.2
-<<<<<<< HEAD
-	github.com/libp2p/go-libp2p-swarm v0.2.3
-	github.com/libp2p/go-libp2p-testing v0.1.1
-	github.com/libp2p/go-libp2p-tls v0.1.3
-	github.com/libp2p/go-libp2p-yamux v0.2.7
-	github.com/libp2p/go-maddr-filter v0.0.5
-	github.com/libp2p/go-sockaddr v0.1.0 // indirect
-=======
-=======
 	github.com/libp2p/go-libp2p-noise v0.1.1
 	github.com/libp2p/go-libp2p-peerstore v0.2.4
 	github.com/libp2p/go-libp2p-pubsub v0.3.1
@@ -129,28 +78,16 @@ require (
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/libp2p/go-libp2p-routing-helpers v0.2.3
 	github.com/libp2p/go-libp2p-secio v0.2.2
->>>>>>> master
 	github.com/libp2p/go-libp2p-swarm v0.2.5
 	github.com/libp2p/go-libp2p-testing v0.1.1
 	github.com/libp2p/go-libp2p-tls v0.1.3
 	github.com/libp2p/go-libp2p-yamux v0.2.8
-<<<<<<< HEAD
->>>>>>> chore: update libp2p deps
-	github.com/libp2p/go-socket-activation v0.0.2
-	github.com/libp2p/go-ws-transport v0.3.1 // indirect
-	github.com/mattn/go-runewidth v0.0.8 // indirect
-	github.com/miekg/dns v1.1.29 // indirect
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mr-tron/base58 v1.1.3
-	github.com/multiformats/go-multiaddr v0.2.1
-=======
 	github.com/libp2p/go-socket-activation v0.0.2
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/miekg/dns v1.1.29 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mr-tron/base58 v1.1.3
 	github.com/multiformats/go-multiaddr v0.2.2
->>>>>>> master
 	github.com/multiformats/go-multiaddr-dns v0.2.0
 	github.com/multiformats/go-multiaddr-net v0.1.5
 	github.com/multiformats/go-multibase v0.0.3
@@ -162,28 +99,16 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/whyrusleeping/base32 v0.0.0-20170828182744-c30ac30633cc
 	github.com/whyrusleeping/go-sysinfo v0.0.0-20190219211824-4a357d4b90b1
-	github.com/whyrusleeping/mdns v0.0.0-20190823211037-23958d6311f0 // indirect
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7
 	github.com/whyrusleeping/tar-utils v0.0.0-20180509141711-8c6c8ba81d5c
 	go.uber.org/fx v1.12.0
 	go.uber.org/zap v1.15.0
-<<<<<<< HEAD
-	golang.org/x/crypto v0.0.0-20200423211502-4bdfaf469ed5
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
-	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
-=======
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	golang.org/x/sys v0.0.0-20200523222454-059865788121
 	golang.org/x/tools v0.0.0-20200522201501-cb1345f3a375 // indirect
->>>>>>> master
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
 go 1.13
-<<<<<<< HEAD
-
-replace github.com/ipfs/go-ipfs-provider => github.com/MichaelMure/go-ipfs-provider v0.2.2-0.20191017161655-f2597dc7065a
-=======
->>>>>>> master

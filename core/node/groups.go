@@ -26,7 +26,7 @@ var BaseLibP2P = fx.Options(
 	fx.Provide(libp2p.UserAgent),
 	fx.Provide(libp2p.PNet),
 	fx.Provide(libp2p.ConnectionManager),
-	fx.Provide(libp2p.DefaultTransports),
+	fx.Provide(libp2p.Transports),
 
 	fx.Provide(libp2p.Host),
 
@@ -75,7 +75,6 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		pubsubOptions = append(
 			pubsubOptions,
 			pubsub.WithMessageSigning(!cfg.Pubsub.DisableSigning),
-			pubsub.WithStrictSignatureVerification(cfg.Pubsub.StrictSignatureVerification),
 		)
 
 		switch cfg.Pubsub.Router {
@@ -90,6 +89,25 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		}
 	}
 
+	autonat := fx.Options()
+
+	switch cfg.AutoNAT.ServiceMode {
+	default:
+		panic("BUG: unhandled autonat service mode")
+	case config.AutoNATServiceDisabled:
+	case config.AutoNATServiceUnset:
+		// TODO
+		//
+		// We're enabling the AutoNAT service by default on _all_ nodes
+		// for the moment.
+		//
+		// We should consider disabling it by default if the dht is set
+		// to dhtclient.
+		fallthrough
+	case config.AutoNATServiceEnabled:
+		autonat = fx.Provide(libp2p.AutoNATService(cfg.AutoNAT.Throttle))
+	}
+
 	// Gather all the options
 
 	opts := fx.Options(
@@ -102,7 +120,7 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		fx.Invoke(libp2p.StartListening(cfg.Addresses.Swarm)),
 		fx.Invoke(libp2p.SetupDiscovery(cfg.Discovery.MDNS.Enabled, cfg.Discovery.MDNS.Interval)),
 
-		fx.Provide(libp2p.Security(!bcfg.DisableEncryptedConnections, cfg.Experimental.PreferTLS)),
+		fx.Provide(libp2p.Security(!bcfg.DisableEncryptedConnections, cfg.Experimental.OverrideSecurityTransports)),
 
 		fx.Provide(libp2p.Routing),
 		fx.Provide(libp2p.BaseRouting),
@@ -110,9 +128,8 @@ func LibP2P(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 
 		maybeProvide(libp2p.BandwidthCounter, !cfg.Swarm.DisableBandwidthMetrics),
 		maybeProvide(libp2p.NatPortMap, !cfg.Swarm.DisableNatPortMap),
-		maybeProvide(libp2p.AutoNATService, cfg.Swarm.EnableAutoNATService),
 		maybeProvide(libp2p.AutoRelay, cfg.Swarm.EnableAutoRelay),
-		maybeProvide(libp2p.QUIC, cfg.Experimental.QUIC),
+		autonat,
 		connmgr,
 		ps,
 		disc,
@@ -233,6 +250,8 @@ func Online(bcfg *BuildCfg, cfg *config.Config) fx.Option {
 		fx.Provide(OnlineExchange(shouldBitswapProvide)),
 		maybeProvide(Graphsync, cfg.Experimental.GraphsyncEnabled),
 		fx.Provide(Namesys(ipnsCacheSize)),
+		fx.Provide(Peering),
+		PeerWith(cfg.Peering.Peers...),
 
 		fx.Invoke(IpnsRepublisher(repubPeriod, recordLifetime)),
 

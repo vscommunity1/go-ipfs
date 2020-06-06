@@ -19,7 +19,7 @@ var codec = base32.StdEncoding.WithPadding(base32.NoPadding)
 
 // Keystore provides a key management interface
 type Keystore interface {
-	// Has returns whether or not a key exist in the Keystore
+	// Has returns whether or not a key exists in the Keystore
 	Has(string) (bool, error)
 	// Put stores a key in the Keystore, if a key with the same name already exists, returns ErrKeyExists
 	Put(string, ci.PrivKey) error
@@ -47,20 +47,17 @@ type FSKeystore struct {
 
 // NewFSKeystore returns a new filesystem-backed keystore.
 func NewFSKeystore(dir string) (*FSKeystore, error) {
-	_, err := os.Stat(dir)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-		if err := os.Mkdir(dir, 0700); err != nil {
-			return nil, err
-		}
+	err := os.Mkdir(dir, 0700)
+	switch {
+	case os.IsExist(err):
+	case err == nil:
+	default:
+		return nil, err
 	}
-
 	return &FSKeystore{dir}, nil
 }
 
-// Has returns whether or not a key exist in the Keystore
+// Has returns whether or not a key exists in the Keystore
 func (ks *FSKeystore) Has(name string) (bool, error) {
 	name, err := encode(name)
 	if err != nil {
@@ -84,22 +81,18 @@ func (ks *FSKeystore) Put(name string, k ci.PrivKey) error {
 		return err
 	}
 
-	b, err := k.Bytes()
+	b, err := ci.MarshalPrivateKey(k)
 	if err != nil {
 		return err
 	}
 
 	kp := filepath.Join(ks.dir, name)
 
-	_, err = os.Stat(kp)
-	if err == nil {
-		return ErrKeyExists
-	} else if !os.IsNotExist(err) {
-		return err
-	}
-
-	fi, err := os.Create(kp)
+	fi, err := os.OpenFile(kp, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0400)
 	if err != nil {
+		if os.IsExist(err) {
+			err = ErrKeyExists
+		}
 		return err
 	}
 	defer fi.Close()

@@ -34,12 +34,13 @@ import (
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	pstore "github.com/libp2p/go-libp2p-core/peerstore"
 	routing "github.com/libp2p/go-libp2p-core/routing"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
+	ddht "github.com/libp2p/go-libp2p-kad-dht/dual"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	psrouter "github.com/libp2p/go-libp2p-pubsub-router"
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/p2p/discovery"
 	p2pbhost "github.com/libp2p/go-libp2p/p2p/host/basic"
+	ma "github.com/multiformats/go-multiaddr"
 
 	"github.com/ipfs/go-ipfs/core/bootstrap"
 	"github.com/ipfs/go-ipfs/core/node"
@@ -56,6 +57,7 @@ import (
 >>>>>>> origin/feat/ipns-follow
 	ipnsrp "github.com/ipfs/go-ipfs/namesys/republisher"
 	"github.com/ipfs/go-ipfs/p2p"
+	"github.com/ipfs/go-ipfs/peering"
 	"github.com/ipfs/go-ipfs/repo"
 )
 
@@ -92,6 +94,8 @@ type IpfsNode struct {
 	// Online
 <<<<<<< HEAD
 	PeerHost      p2phost.Host            `optional:"true"` // the network host (server+client)
+	Peering       peering.PeeringService  `optional:"true"`
+	Filters       *ma.Filters             `optional:"true"`
 	Bootstrapper  io.Closer               `optional:"true"` // the periodic bootstrapper
 	Routing       routing.Routing         `optional:"true"` // the routing system. recommend ipfs-dht
 	Exchange      exchange.Interface      // the block exchange + strategy (bitswap)
@@ -112,7 +116,7 @@ type IpfsNode struct {
 
 	PubSub   *pubsub.PubSub             `optional:"true"`
 	PSRouter *psrouter.PubsubValueStore `optional:"true"`
-	DHT      *dht.IpfsDHT               `optional:"true"`
+	DHT      *ddht.DHT                  `optional:"true"`
 	P2P      *p2p.P2P                   `optional:"true"`
 
 	Process goprocess.Process

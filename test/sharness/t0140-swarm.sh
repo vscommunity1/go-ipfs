@@ -40,7 +40,7 @@ test_expect_success "output looks good" '
 
 addr="/ip4/127.0.0.1/tcp/9898/p2p/QmUWKoHbjsqsSMesRC2Zoscs8edyFz6F77auBB1YBBhgpX"
 
-test_expect_success "cant trigger a dial backoff with swarm connect" '
+test_expect_success "can't trigger a dial backoff with swarm connect" '
   test_expect_code 1 ipfs swarm connect $addr 2> connect_out
   test_expect_code 1 ipfs swarm connect $addr 2>> connect_out
   test_expect_code 1 ipfs swarm connect $addr 2>> connect_out
@@ -121,6 +121,25 @@ test_expect_success "/p2p addresses work" '
   [ $(ipfsi 0 swarm peers | wc -l) -eq 0 ] &&
   ipfsi 0 swarm connect "/p2p/$(iptb attr get 1 id)" &&
   [ $(ipfsi 0 swarm peers | wc -l) -eq 1 ]
+'
+
+test_expect_success "ipfs id is consistent for node 0" '
+  ipfsi 1 id "$(iptb attr get 0 id)" > 1see0 &&
+  ipfsi 0 id > 0see0 &&
+  test_cmp 1see0 0see0
+'
+
+test_expect_success "ipfs id is consistent for node 1" '
+  ipfsi 0 id "$(iptb attr get 1 id)" > 0see1 &&
+  ipfsi 1 id > 1see1 &&
+  test_cmp 0see1 1see1
+'
+
+test_expect_success "addresses contain /p2p/..." '
+  test_should_contain "/p2p/$(iptb attr get 1 id)\"" 0see1 &&
+  test_should_contain "/p2p/$(iptb attr get 1 id)\"" 1see1 &&
+  test_should_contain "/p2p/$(iptb attr get 0 id)\"" 1see0 &&
+  test_should_contain "/p2p/$(iptb attr get 0 id)\"" 0see0
 '
 
 test_expect_success "stopping cluster" '

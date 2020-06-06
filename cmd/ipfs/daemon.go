@@ -53,6 +53,7 @@ const (
 	routingOptionSupernodeKwd = "supernode"
 	routingOptionDHTClientKwd = "dhtclient"
 	routingOptionDHTKwd       = "dht"
+	routingOptionDHTServerKwd = "dhtserver"
 	routingOptionNoneKwd      = "none"
 	routingOptionDefaultKwd   = "default"
 	unencryptTransportKwd     = "disable-transport-encryption"
@@ -122,7 +123,7 @@ You can setup CORS headers the same way:
 
 Shutdown
 
-To shutdown the daemon, send a SIGINT signal to it (e.g. by pressing 'Ctrl-C')
+To shut down the daemon, send a SIGINT signal to it (e.g. by pressing 'Ctrl-C')
 or send a SIGTERM signal to it (e.g. with 'kill'). It may take a while for the
 daemon to shutdown gracefully, but it can be killed forcibly by sending a
 second signal.
@@ -353,6 +354,8 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 		ncfg.Routing = libp2p.DHTClientOption
 	case routingOptionDHTKwd:
 		ncfg.Routing = libp2p.DHTOption
+	case routingOptionDHTServerKwd:
+		ncfg.Routing = libp2p.DHTServerOption
 	case routingOptionNoneKwd:
 		ncfg.Routing = libp2p.NilRouterOption
 	default:
@@ -454,7 +457,7 @@ func daemonFunc(req *cmds.Request, re cmds.ResponseEmitter, env cmds.Environment
 	}()
 
 	// collect long-running errors and block for shutdown
-	// TODO(cryptix): our fuse currently doesnt follow this pattern for graceful shutdown
+	// TODO(cryptix): our fuse currently doesn't follow this pattern for graceful shutdown
 	var errs error
 	for err := range merge(apiErrc, gwErrc, gcErrc) {
 		if err != nil {
@@ -493,7 +496,7 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 	for _, addr := range apiAddrs {
 		apiMaddr, err := ma.NewMultiaddr(addr)
 		if err != nil {
-			return nil, fmt.Errorf("serveHTTPApi: invalid API address: %q (err: %s)", apiAddr, err)
+			return nil, fmt.Errorf("serveHTTPApi: invalid API address: %q (err: %s)", addr, err)
 		}
 		if listenerAddrs[string(apiMaddr.Bytes())] {
 			continue
@@ -509,7 +512,7 @@ func serveHTTPApi(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, error
 	}
 
 	for _, listener := range listeners {
-		// we might have listened to /tcp/0 - lets see what we are listing on
+		// we might have listened to /tcp/0 - let's see what we are listing on
 		fmt.Printf("API server listening on %s\n", listener.Multiaddr())
 		// Browsers require TCP.
 		switch listener.Addr().Network() {
@@ -645,7 +648,7 @@ func serveHTTPGateway(req *cmds.Request, cctx *oldcmds.Context) (<-chan error, e
 		listeners = append(listeners, gwLis)
 	}
 
-	// we might have listened to /tcp/0 - lets see what we are listing on
+	// we might have listened to /tcp/0 - let's see what we are listing on
 	gwType := "readonly"
 	if writable {
 		gwType = "writable"

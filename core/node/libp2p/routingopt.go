@@ -57,9 +57,13 @@ func constructNilRouting(
 }
 
 var (
+<<<<<<< HEAD
 	// FIXME: Set this to dht.ModeAuto once we resolve
 	// https://github.com/libp2p/go-libp2p-kad-dht/issues/564
 	DHTOption       RoutingOption = constructDHTRouting(dht.ModeServer)
+=======
+	DHTOption       RoutingOption = constructDHTRouting(dht.ModeAuto)
+>>>>>>> master
 	DHTClientOption               = constructDHTRouting(dht.ModeClient)
 	DHTServerOption               = constructDHTRouting(dht.ModeServer)
 	NilRouterOption               = constructNilRouting

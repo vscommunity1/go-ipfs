@@ -3,28 +3,42 @@ package peerlog
 import (
 	"fmt"
 <<<<<<< HEAD
+<<<<<<< HEAD
 	"sync/atomic"
 	"time"
 =======
 >>>>>>> feat: add peerlog plugin
+=======
+	"sync/atomic"
+	"time"
+>>>>>>> master
 
 	core "github.com/ipfs/go-ipfs/core"
 	plugin "github.com/ipfs/go-ipfs/plugin"
 	logging "github.com/ipfs/go-log"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 	event "github.com/libp2p/go-libp2p-core/event"
 	network "github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/peerstore"
 	"go.uber.org/zap"
+<<<<<<< HEAD
 =======
 	network "github.com/libp2p/go-libp2p-core/network"
 >>>>>>> feat: add peerlog plugin
+=======
+>>>>>>> master
 )
 
 var log = logging.Logger("plugin/peerlog")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 type eventType int
 
 var (
@@ -44,8 +58,11 @@ type plEvent struct {
 	peer peer.ID
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> feat: add peerlog plugin
+=======
+>>>>>>> master
 // Log all the PeerIDs we see
 //
 // Usage:
@@ -53,17 +70,23 @@ type plEvent struct {
 // Output:
 //   {"level":"info","ts":"2020-02-10T13:54:26.639Z","logger":"plugin/peerlog","caller":"peerlog/peerlog.go:51","msg":"connected","peer":"QmS2H72gdrekXJggGdE9SunXPntBqdkJdkXQJjuxcH8Cbt"}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 //   {"level":"info","ts":"2020-02-10T13:54:59.095Z","logger":"plugin/peerlog","caller":"peerlog/peerlog.go:56","msg":"identified","peer":"QmS2H72gdrekXJggGdE9SunXPntBqdkJdkXQJjuxcH8Cbt","agent":"go-ipfs/0.5.0/"}
 //
 type peerLogPlugin struct {
 	droppedCount uint64
 	events       chan plEvent
 }
+<<<<<<< HEAD
 =======
 //   {"level":"info","ts":"2020-02-10T13:54:59.095Z","logger":"plugin/peerlog","caller":"peerlog/peerlog.go:56","msg":"disconnected","peer":"QmS2H72gdrekXJggGdE9SunXPntBqdkJdkXQJjuxcH8Cbt"}
 //
 type peerLogPlugin struct{}
 >>>>>>> feat: add peerlog plugin
+=======
+>>>>>>> master
 
 var _ plugin.PluginDaemonInternal = (*peerLogPlugin)(nil)
 
@@ -84,6 +107,9 @@ func (*peerLogPlugin) Version() string {
 
 // Init initializes plugin
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 func (pl *peerLogPlugin) Init(*plugin.Environment) error {
 	pl.events = make(chan plEvent, eventQueueSize)
 	return nil
@@ -198,6 +224,7 @@ func (pl *peerLogPlugin) Start(node *core.IpfsNode) error {
 
 	go pl.collectEvents(node)
 
+<<<<<<< HEAD
 =======
 func (*peerLogPlugin) Init(*plugin.Environment) error {
 	return nil
@@ -221,6 +248,8 @@ func (*peerLogPlugin) Start(node *core.IpfsNode) error {
 	}
 	node.PeerHost.Network().Notify(&notifee)
 >>>>>>> feat: add peerlog plugin
+=======
+>>>>>>> master
 	return nil
 }
 

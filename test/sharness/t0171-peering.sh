@@ -88,10 +88,14 @@ disconnect() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Bidirectional peering shouldn't cause problems (e.g., simultaneous connect
 =======
 # Bidiractional peering shouldn't cause problems (e.g., simultaneous connect
 >>>>>>> feat: implement peering service
+=======
+# Bidirectional peering shouldn't cause problems (e.g., simultaneous connect
+>>>>>>> master
 # issues).
 test_expect_success 'disconnecting 0->1' '
   disconnect 0 1

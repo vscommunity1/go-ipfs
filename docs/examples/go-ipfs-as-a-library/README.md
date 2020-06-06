@@ -84,6 +84,9 @@ As soon as you construct the IPFS node instance, the node will be running.
 ### Part 2: Adding a file and a directory to IPFS
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 - [Prepare the file to be added to IPFS](./main.go#L166-L184)
 - [Add the file to IPFS](./main.go#L240-L243)
 - [Prepare the directory to be added to IPFS](./main.go#L186-L198)
@@ -101,6 +104,7 @@ As soon as you construct the IPFS node instance, the node will be running.
 - [Connect to nodes in the network](./main.go#L293-L310)
 - [Get the file from the network](./main.go#L318-L321)
 - [Write the file to your local filesystem](./main.go#L323-L326)
+<<<<<<< HEAD
 =======
 - [Prepare the file to be added to IPFS](./main.go#L166-L184))
 - [Add the file to IPFS](./main.go#L240-L243))
@@ -120,11 +124,14 @@ As soon as you construct the IPFS node instance, the node will be running.
 - [Get the file from the network](./main.go#L318-L321))
 - [Write the file to your local filesystem](./main.go#L323-L326))
 >>>>>>> docs: Tutorial - Using go-ipfs as a Library
+=======
+>>>>>>> master
 
 ### Bonus: Spawn a daemon on your existing IPFS repo (on the default path ~/.ipfs)
 
 As a bonus, you can also find lines that show you how to spawn a node over your default path (~/.ipfs) in case you had already started a node there before. To try it:
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 - [Comment these lines](./main.go#L219-L223)
 - [Uncomment these lines](./main.go#L209-L216)
@@ -132,6 +139,10 @@ As a bonus, you can also find lines that show you how to spawn a node over your 
 - [Comment these lines](./main.go#L219-L223))
 - [Uncomment these lines](./main.go#L209-L216))
 >>>>>>> docs: Tutorial - Using go-ipfs as a Library
+=======
+- [Comment these lines](./main.go#L219-L223)
+- [Uncomment these lines](./main.go#L209-L216)
+>>>>>>> master
 
 ## Voilá! You are now a go-ipfs hacker
 

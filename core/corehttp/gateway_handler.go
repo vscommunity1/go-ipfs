@@ -189,6 +189,7 @@ func (i *gatewayHandler) getOrHeadHandler(w http.ResponseWriter, r *http.Request
 			webError(w, "navigator.serviceWorker", err, http.StatusBadRequest)
 			return
 		}
+<<<<<<< HEAD
 	}
 
 	// Service Worker registration request
@@ -213,6 +214,8 @@ func (i *gatewayHandler) getOrHeadHandler(w http.ResponseWriter, r *http.Request
 			webError(w, "navigator.serviceWorker", err, http.StatusBadRequest)
 			return
 		}
+=======
+>>>>>>> master
 	}
 
 	parsedPath := ipath.New(urlPath)
@@ -569,6 +572,7 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
 	err = dir.AddChild(newFileName, newFile)
 	if err != nil {
 		webError(w, "WritableGateway: failed to link file into directory", err, http.StatusInternalServerError)
+<<<<<<< HEAD
 		return
 	}
 	nnode, err := root.GetDirectory().GetNode()
@@ -576,6 +580,15 @@ func (i *gatewayHandler) putHandler(w http.ResponseWriter, r *http.Request) {
 		webError(w, "WritableGateway: failed to finalize", err, http.StatusInternalServerError)
 		return
 	}
+=======
+		return
+	}
+	nnode, err := root.GetDirectory().GetNode()
+	if err != nil {
+		webError(w, "WritableGateway: failed to finalize", err, http.StatusInternalServerError)
+		return
+	}
+>>>>>>> master
 	newcid := nnode.Cid()
 
 	i.addUserHeaders(w) // ok, _now_ write user's headers.
@@ -598,9 +611,15 @@ func (i *gatewayHandler) deleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	directory, filename := gopath.Split(newPath)
+<<<<<<< HEAD
 
 	// lookup the root
 
+=======
+
+	// lookup the root
+
+>>>>>>> master
 	rootNodeIPLD, err := i.api.Dag().Get(ctx, rootCid)
 	if err != nil {
 		webError(w, "WritableGateway: failed to resolve root CID", err, http.StatusInternalServerError)

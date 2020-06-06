@@ -68,10 +68,14 @@ test_localhost_gateway_response_should_contain() {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Helper that checks gateway response for specific hostname in Host header
 =======
 # Helper that checks gateway resonse for specific hostname in Host header
 >>>>>>> feat(gateway): subdomain and proxy gateway
+=======
+# Helper that checks gateway response for specific hostname in Host header
+>>>>>>> master
 test_hostname_gateway_response_should_contain() {
   local label="$1"
   local hostname="$2"
@@ -150,20 +154,29 @@ test_localhost_gateway_response_should_contain \
 
 test_localhost_gateway_response_should_contain \
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
   "request for localhost/ipfs/{CIDv1} returns HTTP 301 Moved Permanently" \
   "http://localhost:$GWAY_PORT/ipfs/$CIDv1" \
   "301 Moved Permanently"
 
 test_localhost_gateway_response_should_contain \
   "request for localhost/ipfs/{CIDv1} returns Location HTTP header for subdomain redirect in browsers" \
+<<<<<<< HEAD
 =======
   "request for localhost/ipfs/{CIDv1} redirects to subdomain" \
 >>>>>>> feat(gateway): subdomain and proxy gateway
+=======
+>>>>>>> master
   "http://localhost:$GWAY_PORT/ipfs/$CIDv1" \
   "Location: http://$CIDv1.ipfs.localhost:$GWAY_PORT/"
 
 test_localhost_gateway_response_should_contain \
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
   "request for localhost/ipfs/{DIR_CID} returns HTTP 301 Moved Permanently" \
   "http://localhost:$GWAY_PORT/ipfs/$DIR_CID" \
   "301 Moved Permanently"
@@ -190,8 +203,11 @@ test_localhost_gateway_response_should_contain \
   "$CID_VAL"
 
 test_localhost_gateway_response_should_contain \
+<<<<<<< HEAD
 =======
 >>>>>>> feat(gateway): subdomain and proxy gateway
+=======
+>>>>>>> master
   "request for localhost/ipfs/{CIDv0} redirects to CIDv1 representation in subdomain" \
   "http://localhost:$GWAY_PORT/ipfs/$CIDv0" \
   "Location: http://${CIDv0to1}.ipfs.localhost:$GWAY_PORT/"

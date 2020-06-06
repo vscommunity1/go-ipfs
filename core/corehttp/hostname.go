@@ -96,6 +96,9 @@ func HostnameOption() ServeOption {
 						// Example: dweb.link/ipfs/{cid} → {cid}.ipfs.dweb.link
 						if newURL, ok := toSubdomainURL(r.Host, r.URL.Path, r); ok {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 							// Just to be sure single Origin can't be abused in
 							// web browsers that ignored the redirect for some
 							// reason, Clear-Site-Data header clears browsing
@@ -114,10 +117,13 @@ func HostnameOption() ServeOption {
 							// Note: we continue regular gateway processing:
 							// HTTP Status Code http.StatusMovedPermanently
 							// will be set later, in statusResponseWriter
+<<<<<<< HEAD
 =======
 							http.Redirect(w, r, newURL, http.StatusMovedPermanently)
 							return
 >>>>>>> feat(gateway): subdomain and proxy gateway
+=======
+>>>>>>> master
 						}
 					}
 

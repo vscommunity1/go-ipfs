@@ -1,12 +1,18 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 # This file allows re-mapping author names/emails
 # while maintaining the integrity of the repository
 #
 # Spec: https://www.kernel.org/pub/software/scm/git/docs/git-shortlog.html#_mapping_authors
 #
 
+<<<<<<< HEAD
 =======
 >>>>>>> feat: add a mailmap file
+=======
+>>>>>>> master
 @RubenKelevra <cyrond@gmail.com>
 Aaron Hill <aa1ronham@gmail.com>
 Adam Gashlin <agashlin@gmail.com>
@@ -179,10 +185,14 @@ Patrick Connolly <patrick.c.connolly@gmail.com>
 Pavol Rusnak <stick@gk2.sk>
 Peter Borzov <peter@sowingo.com> <tihoutrom@gmail.com>
 <<<<<<< HEAD
+<<<<<<< HEAD
 Peter Rabbitson <ribasushi@protocol.ai> <peter@protocol.ai> <ribasushi@leporine.io> <mib.kd743naq@gmail.com>
 =======
 Peter Rabbitson <peter@protocol.ai> <ribasushi@leporine.io> <ribasushi@protocol.ai>
 >>>>>>> feat: add a mailmap file
+=======
+Peter Rabbitson <ribasushi@protocol.ai> <peter@protocol.ai> <ribasushi@leporine.io> <mib.kd743naq@gmail.com>
+>>>>>>> master
 Peter Wu <pwu@cloudflare.com>
 Philip Nelson <me@pnelson.ca>
 Pierre-Alain TORET <pierre-alain.toret@protonmail.com>

@@ -61,12 +61,15 @@ test_expect_success FUSE "local symlink works" '
   test_cmp expected actual
 '
 
+<<<<<<< HEAD
 test_expect_success FUSE "local symlink works" '
   ipfsi 0 id -f"<id>\n" > expected &&
   basename $(readlink ipns/local) > actual &&
   test_cmp expected actual
 '
 
+=======
+>>>>>>> master
 test_expect_success FUSE "can resolve ipns names" '
   echo -n "ipfs" > expected &&
   cat ipns/welcome.example.com/ping > actual &&

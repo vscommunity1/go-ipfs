@@ -205,11 +205,16 @@ func main() {
 	fmt.Println("-- Getting an IPFS node running -- ")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 =======
 	ctx, _ := context.WithCancel(context.Background())
 >>>>>>> docs: Tutorial - Using go-ipfs as a Library
+=======
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+>>>>>>> master
 
 	/*
 		// Spawn a node using the default path (~/.ipfs), assuming that a repo exists there already
@@ -298,6 +303,9 @@ func main() {
 	bootstrapNodes := []string{
 		// IPFS Bootstrapper nodes.
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> master
 		"/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
 		"/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
 		"/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
@@ -316,6 +324,7 @@ func main() {
 		// You can add more nodes here, for example, another IPFS node you might have running locally, mine was:
 		// "/ip4/127.0.0.1/tcp/4010/p2p/QmZp2fhDLxjYue2RiUvLwT9MWdnbDxam32qYFnGmxZDh5L",
 		// "/ip4/127.0.0.1/udp/4010/quic/p2p/QmZp2fhDLxjYue2RiUvLwT9MWdnbDxam32qYFnGmxZDh5L",
+<<<<<<< HEAD
 =======
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
@@ -331,6 +340,8 @@ func main() {
 		// You can add more nodes here, for example, another IPFS node you might have running locally, mine was:
 		// "/ip4/127.0.0.1/tcp/4010/ipfs/QmZp2fhDLxjYue2RiUvLwT9MWdnbDxam32qYFnGmxZDh5L",
 >>>>>>> docs: Tutorial - Using go-ipfs as a Library
+=======
+>>>>>>> master
 	}
 
 	go connectToPeers(ctx, ipfs, bootstrapNodes)

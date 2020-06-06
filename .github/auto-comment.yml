@@ -3,6 +3,7 @@
 # issueOpened: ""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Disabled
 # pullRequestOpened: ""
 =======
@@ -48,3 +49,7 @@ pullRequestOpened: >
 
   Again, thank you for contributing!
 >>>>>>> Auto-comment on submitted PRs
+=======
+# Disabled
+# pullRequestOpened: ""
+>>>>>>> master

@@ -20,11 +20,14 @@ pushd "$tmpdir" > /dev/null
 if command -v ipfs > /dev/null 2>&1; then
   cp "$(command -v ipfs)" ipfs
 fi
+<<<<<<< HEAD
 
 IPFS_BIN=$(which ipfs)
 if [[ -e "$IPFS_BIN" ]]; then
     cp "$IPFS_BIN" ipfs
 fi
+=======
+>>>>>>> master
 
 echo Collecting goroutine stacks
 curl -s -o goroutines.stacks "$SOURCE_URL"'/debug/pprof/goroutine?debug=2'

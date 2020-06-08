@@ -20,11 +20,10 @@ type persistent struct {
 }
 
 type follow struct {
-<<<<<<< HEAD
-	Prefetch bool
-=======
 	Pin bool
->>>>>>> namecache: basic persistent version
+=======
+	Prefetch bool
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	Deadline time.Time
 }
 
@@ -44,8 +43,8 @@ func NewPersistentCache(base NameCache, d ds.Datastore) (NameCache, error) {
 <<<<<<< HEAD
 		if err := base.Follow(e.Key, f.Prefetch, time.Now().Sub(f.Deadline)); err != nil {
 =======
-		if err := base.Follow(e.Key, f.Pin, time.Now().Sub(f.Deadline)); err != nil {
->>>>>>> namecache: basic persistent version
+		if err := base.Follow(e.Key, f.Prefetch, time.Now().Sub(f.Deadline)); err != nil {
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 			return nil, err
 		}
 	}
@@ -62,10 +61,10 @@ func (p *persistent) Follow(name string, prefetch bool, followInterval time.Dura
 	b, err := json.Marshal(&follow{
 		Prefetch: prefetch,
 =======
-func (p *persistent) Follow(name string, dopin bool, followInterval time.Duration) error {
+func (p *persistent) Follow(name string, prefetch bool, followInterval time.Duration) error {
 	b, err := json.Marshal(&follow{
-		Pin: dopin,
->>>>>>> namecache: basic persistent version
+		Prefetch: prefetch,
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		Deadline: time.Now().Add(followInterval),
 	})
 	if err != nil {
@@ -75,8 +74,8 @@ func (p *persistent) Follow(name string, dopin bool, followInterval time.Duratio
 <<<<<<< HEAD
 	if err := p.NameCache.Follow(name, prefetch, followInterval); err != nil {
 =======
-	if err := p.NameCache.Follow(name, dopin, followInterval); err != nil {
->>>>>>> namecache: basic persistent version
+	if err := p.NameCache.Follow(name, prefetch, followInterval); err != nil {
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		return err
 	}
 	return p.ds.Put(ds.NewKey(name), b)

@@ -167,15 +167,26 @@ func TestInvalidKeyFiles(t *testing.T) {
 	}
 
 	encodedName, err := encode("valid")
+<<<<<<< HEAD
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	err = ioutil.WriteFile(filepath.Join(ks.dir, encodedName), bytes, 0644)
+=======
+>>>>>>> master
 	if err != nil {
 		t.Fatal(err)
 	}
 
+<<<<<<< HEAD
+=======
+	err = ioutil.WriteFile(filepath.Join(ks.dir, encodedName), bytes, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+>>>>>>> master
 	err = ioutil.WriteFile(filepath.Join(ks.dir, "z.invalid"), bytes, 0644)
 	if err != nil {
 		t.Fatal(err)

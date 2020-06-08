@@ -19,7 +19,7 @@ test_expect_success "ipfs refs local over HTTP API returns NDJOSN not flat - #28
   curl -X POST "http://$API_ADDR/api/v0/refs/local" | grep "Ref" | grep "Err"
 '
 
-test_expect_success "args expecting stdin don't crash when not given" '
+test_expect_success "args expecting stdin dont crash when not given" '
   curl -X POST "$API_ADDR/api/v0/bootstrap/add" > result
 '
 
@@ -84,4 +84,3 @@ test_expect_success "resolve output looks good" '
 test_kill_ipfs_daemon
 
 test_done
-

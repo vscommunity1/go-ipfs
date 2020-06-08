@@ -4,6 +4,7 @@ go 1.14
 
 require (
 <<<<<<< HEAD
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	github.com/ipfs/go-ipfs v0.5.0
 	github.com/ipfs/go-ipfs-config v0.5.3
 	github.com/ipfs/go-ipfs-files v0.0.8
@@ -16,6 +17,7 @@ require (
 	github.com/ipfs/interface-go-ipfs-core v0.2.6
 	github.com/libp2p/go-libp2p-core v0.5.1
 >>>>>>> Add module files for go-ipfs-as-a-library example
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	github.com/libp2p/go-libp2p-peerstore v0.2.3
 	github.com/multiformats/go-multiaddr v0.2.1
 )

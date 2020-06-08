@@ -20,6 +20,14 @@ pushd "$tmpdir" > /dev/null
 if command -v ipfs > /dev/null 2>&1; then
   cp "$(command -v ipfs)" ipfs
 fi
+<<<<<<< HEAD
+
+IPFS_BIN=$(which ipfs)
+if [[ -e "$IPFS_BIN" ]]; then
+    cp "$IPFS_BIN" ipfs
+fi
+=======
+>>>>>>> master
 
 IPFS_BIN=$(which ipfs)
 if [[ -e "$IPFS_BIN" ]]; then

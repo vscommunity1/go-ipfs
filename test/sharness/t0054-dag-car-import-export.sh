@@ -5,6 +5,8 @@ test_description="Test car file import/export functionality"
 
 . lib/test-lib.sh
 <<<<<<< HEAD
+=======
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 export -f ipfsi
 
 set -o pipefail
@@ -200,6 +202,7 @@ test_expect_success "naked root import works" '
 '
 test_expect_success "naked root import expected output" '
    test_cmp_sorted naked_root_import_json_expected naked_root_import_json_actual
+<<<<<<< HEAD
 =======
 
 test_init_ipfs
@@ -218,6 +221,8 @@ test_expect_success "correct error" '
 test_expect_success "basic offline export of 'getting started' dag" '
   ipfs dag export QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv >/dev/null
 >>>>>>> Dag export command, silent, no progress
+=======
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 '
 
 test_done

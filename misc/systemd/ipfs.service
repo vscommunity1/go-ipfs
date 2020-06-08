@@ -1,9 +1,11 @@
 <<<<<<< HEAD
+=======
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 # This file will be overwritten on package upgrades, avoid customizations here.
 #
-# To make persistant changes, create file in 
-# "/etc/systemd/system/ipfs.service.d/overwrite.conf" with 
-# `systemctl edit ipfs.service`. This file will be parsed after this 
+# To make persistant changes, create file in
+# "/etc/systemd/system/ipfs.service.d/overwrite.conf" with
+# `systemctl edit ipfs.service`. This file will be parsed after this
 # file has been parsed.
 #
 # To overwrite a variable, like ExecStart you have to specify it once
@@ -21,7 +23,7 @@ After=network.target
 [Service]
 
 # enable for 1-1024 port listening
-#AmbientCapabilities=CAP_NET_BIND_SERVICE 
+#AmbientCapabilities=CAP_NET_BIND_SERVICE
 # enable to specify a custom path see docs/environment-variables.md for further documentations
 #Environment=IPFS_PATH=/custom/ipfs/path
 # enable to specify a higher limit for open files/connections
@@ -36,6 +38,7 @@ Group=ipfs
 StateDirectory=ipfs
 ExecStart=/usr/bin/ipfs daemon --init --migrate
 Restart=on-failure
+<<<<<<< HEAD
 =======
 [Unit]
 Description=IPFS Daemon
@@ -44,6 +47,8 @@ Description=IPFS Daemon
 Type=notify
 ExecStart=/usr/bin/ipfs daemon --init --migrate
 >>>>>>> implement systemd socket activation
+=======
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 KillSignal=SIGINT
 
 [Install]

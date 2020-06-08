@@ -1,6 +1,7 @@
 package peering
 
 <<<<<<< HEAD
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 import (
 	"context"
 	"testing"
@@ -161,4 +162,5 @@ import "testing"
 
 func TestPeeringService(t *testing.T) {
 >>>>>>> feat: implement peering service
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 }

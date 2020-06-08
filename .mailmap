@@ -1,12 +1,11 @@
-<<<<<<< HEAD
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 # This file allows re-mapping author names/emails
 # while maintaining the integrity of the repository
 #
 # Spec: https://www.kernel.org/pub/software/scm/git/docs/git-shortlog.html#_mapping_authors
 #
 
-=======
->>>>>>> feat: add a mailmap file
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 @RubenKelevra <cyrond@gmail.com>
 Aaron Hill <aa1ronham@gmail.com>
 Adam Gashlin <agashlin@gmail.com>
@@ -179,10 +178,20 @@ Patrick Connolly <patrick.c.connolly@gmail.com>
 Pavol Rusnak <stick@gk2.sk>
 Peter Borzov <peter@sowingo.com> <tihoutrom@gmail.com>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 Peter Rabbitson <ribasushi@protocol.ai> <peter@protocol.ai> <ribasushi@leporine.io> <mib.kd743naq@gmail.com>
 =======
 Peter Rabbitson <peter@protocol.ai> <ribasushi@leporine.io> <ribasushi@protocol.ai>
 >>>>>>> feat: add a mailmap file
+<<<<<<< HEAD
+=======
+=======
+Peter Rabbitson <ribasushi@protocol.ai> <peter@protocol.ai> <ribasushi@leporine.io> <mib.kd743naq@gmail.com>
+>>>>>>> master
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 Peter Wu <pwu@cloudflare.com>
 Philip Nelson <me@pnelson.ca>
 Pierre-Alain TORET <pierre-alain.toret@protonmail.com>

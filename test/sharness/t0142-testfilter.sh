@@ -29,6 +29,8 @@ for i in $(seq 0 $(( NUM_NODES - 1 ))); do
   '
 
 >>>>>>> test(sharness): test address filtering
+=======
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
   test_expect_success "change IP for node $i" '
     ipfsi $i config --json "Addresses.Swarm" \
       "[\"/ip4/127.0.$i.1/tcp/0\",\"/ip4/127.0.$i.1/udp/0/quic\",\"/ip4/127.0.$i.1/tcp/0/ws\"]"

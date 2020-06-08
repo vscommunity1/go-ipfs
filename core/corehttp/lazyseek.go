@@ -47,6 +47,7 @@ func (s *lazySeeker) Read(b []byte) (int, error) {
 =======
 			return 9, err
 >>>>>>> fix(gateway): better seeking/sized
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		}
 		s.realOffset = off
 	}

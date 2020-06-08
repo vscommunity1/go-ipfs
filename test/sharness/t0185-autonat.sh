@@ -12,6 +12,12 @@ test_init_ipfs
 
 test_expect_success "enable autonat" '
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> master
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
   ipfs config AutoNAT.ServiceMode enabled
 '
 
@@ -21,9 +27,18 @@ test_kill_ipfs_daemon
 
 test_expect_success "enable autonat" '
   ipfs config AutoNAT.ServiceMode disabled
+<<<<<<< HEAD
 =======
   ipfs config --json Swarm.EnableAutoNATService true
 >>>>>>> test(sharness): make sure we can actually enable autonat
+=======
+<<<<<<< HEAD
+=======
+  ipfs config --json Swarm.EnableAutoNATService true
+>>>>>>> test(sharness): make sure we can actually enable autonat
+=======
+>>>>>>> master
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 '
 
 test_launch_ipfs_daemon

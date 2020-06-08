@@ -15,6 +15,9 @@ for file in $(find ..  -maxdepth 1 -name 't*.sh' -type f); do
 =======
               test_must_fail grep -L "^test_description=" "$file"
 >>>>>>> test(sharness): test our tests
+=======
+              grep -q "^test_description=" "$file"
+>>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
             '
 
     # We have some tests that manually kill.

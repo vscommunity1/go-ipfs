@@ -41,6 +41,47 @@ SHARNESS_LIB="lib/sharness/sharness.sh"
 
 # Please put go-ipfs specific shell functions below
 
+###
+# BEGIN Check for pre-existing daemon being stuck
+###
+wait_prev_cleanup_tick_secs=1
+wait_prev_cleanup_max_secs=5
+cur_test_pwd="$(pwd)"
+
+while true ; do
+  echo -n > stuck_cwd_list
+
+  lsof -c ipfs -Ffn 2>/dev/null | grep -A1 '^fcwd$' | grep '^n' | cut -b 2- | while read -r pwd_of_stuck ; do
+    case "$pwd_of_stuck" in
+      "$cur_test_pwd"*)
+        echo "$pwd_of_stuck" >> stuck_cwd_list
+        ;;
+      *)
+        ;;
+    esac
+  done
+
+  test -s stuck_cwd_list || break
+
+  test "$wait_prev_cleanup_max_secs" -le 0 && break
+
+  echo "Daemons still running, waiting for ${wait_prev_cleanup_max_secs}s"
+  sleep $wait_prev_cleanup_tick_secs
+
+  wait_prev_cleanup_max_secs="$(( $wait_prev_cleanup_max_secs - $wait_prev_cleanup_tick_secs ))"
+done
+
+if test -s stuck_cwd_list ; then
+  test_expect_success "ipfs daemon (s)seems to be running with CWDs of
+$(cat stuck_cwd_list)
+Almost certainly a leftover from a prior test, ABORTING" 'false'
+
+  test_done
+fi
+###
+# END Check for pre-existing daemon being stuck
+###
+
 # Make sure the ipfs path is set, also set in test_init_ipfs but that
 # is not always used.
 export IPFS_PATH="$(pwd)/.ipfs"
@@ -52,8 +93,12 @@ TEST_OS="$(uname -s | tr '[a-z]' '[A-Z]')"
 # grab + output options
 test "$TEST_NO_FUSE" != 1 && test_set_prereq FUSE
 test "$TEST_EXPENSIVE" = 1 && test_set_prereq EXPENSIVE
-test "$TEST_NO_DOCKER" != 1 && type docker >/dev/null 2>&1 && test_set_prereq DOCKER
+test "$TEST_NO_DOCKER" != 1 && type docker >/dev/null 2>&1 && groups | egrep "\bdocker\b" && test_set_prereq DOCKER
 test "$TEST_NO_PLUGIN" != 1 && test "$TEST_OS" = "LINUX" && test_set_prereq PLUGIN
+
+# this may not be available, skip a few dependent tests
+type socat >/dev/null 2>&1 && test_set_prereq SOCAT
+
 
 # Set a prereq as error messages are often different on Windows/Cygwin
 expr "$TEST_OS" : "CYGWIN_NT" >/dev/null || test_set_prereq STD_ERR_MSG

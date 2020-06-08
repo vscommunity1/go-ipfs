@@ -102,6 +102,11 @@ You can now check what blocks have been created by:
   QmY6yj1GsermExDXoosVE3aSPxdMNYr6aKuw3nA8LoWPRS 2059
   QmerURi9k4XzKCaaPbsK6BL5pMEjF7PGphjDvkkjDtsVf3 868
   QmQB28iwSriSUSMqG2nXDTLtdPHgWb4rebBrU7Q1j4vxPv 338
+
+Finally, a note on hash determinism. While not guaranteed, adding the same
+file/directory with the same flags will almost always result in the same output
+hash. However, almost all of the flags provided by this command (other than pin,
+only-hash, and progress/status related flags) will change the final hash.
 `,
 	},
 
@@ -113,6 +118,8 @@ You can now check what blocks have been created by:
 		cmds.OptionDerefArgs,     // a builtin option that resolves passed in filesystem links (--dereference-args)
 		cmds.OptionStdinName,     // a builtin option that optionally allows wrapping stdin into a named file
 		cmds.OptionHidden,
+		cmds.OptionIgnore,
+		cmds.OptionIgnoreRules,
 		cmds.BoolOption(quietOptionName, "q", "Write minimal output."),
 		cmds.BoolOption(quieterOptionName, "Q", "Write only final hash."),
 		cmds.BoolOption(silentOptionName, "Write no output."),
@@ -286,7 +293,7 @@ You can now check what blocks have been created by:
 			go func() {
 				size, err := req.Files.Size()
 				if err != nil {
-					log.Warningf("error getting files size: %s", err)
+					log.Warnf("error getting files size: %s", err)
 					// see comment above
 					return
 				}

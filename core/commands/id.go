@@ -14,6 +14,7 @@ import (
 
 	cmds "github.com/ipfs/go-ipfs-cmds"
 	ic "github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/host"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	pstore "github.com/libp2p/go-libp2p-core/peerstore"
 	kb "github.com/libp2p/go-libp2p-kbucket"
@@ -75,7 +76,7 @@ EXAMPLE:
 		var id peer.ID
 		if len(req.Arguments) > 0 {
 			var err error
-			id, err = peer.IDB58Decode(req.Arguments[0])
+			id, err = peer.Decode(req.Arguments[0])
 			if err != nil {
 				return fmt.Errorf("invalid peer id")
 			}
@@ -153,7 +154,13 @@ func printPeer(ps pstore.Peerstore, p peer.ID) (interface{}, error) {
 		info.PublicKey = base64.StdEncoding.EncodeToString(pkb)
 	}
 
-	for _, a := range ps.Addrs(p) {
+	addrInfo := ps.PeerInfo(p)
+	addrs, err := peer.AddrInfoToP2pAddrs(&addrInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, a := range addrs {
 		info.Addresses = append(info.Addresses, a.String())
 	}
 
@@ -184,9 +191,12 @@ func printSelf(node *core.IpfsNode) (interface{}, error) {
 	info.PublicKey = base64.StdEncoding.EncodeToString(pkb)
 
 	if node.PeerHost != nil {
-		for _, a := range node.PeerHost.Addrs() {
-			s := a.String() + "/ipfs/" + info.ID
-			info.Addresses = append(info.Addresses, s)
+		addrs, err := peer.AddrInfoToP2pAddrs(host.InfoFromHost(node.PeerHost))
+		if err != nil {
+			return nil, err
+		}
+		for _, a := range addrs {
+			info.Addresses = append(info.Addresses, a.String())
 		}
 	}
 	info.ProtocolVersion = identify.LibP2PVersion

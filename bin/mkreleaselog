@@ -6,20 +6,49 @@ export GOPATH="$(go env GOPATH)"
 
 alias jq="jq --unbuffered"
 
-[[ -n "${REPO_FILTER+x}" ]] || REPO_FILTER="github.com/(ipfs|libp2p|ipld)"
-[[ -n "${IGNORED_FILES+x}" ]] || IGNORED_FILES='^\(\.gx\|package.json\|\.travis.yml\|go.mod\|go.sum\)$'
+AUTHORS=(
+    # orgs
+    ipfs
+    ipld
+    libp2p
+    multiformats
+    filecoin-project
+    ipfs-shipyard
+
+    # Authors of personal repos used by go-ipfs that should be mentioned in the
+    # release notes.
+    whyrusleeping
+    Kubuxu
+    jbenet
+    Stebalien
+    marten-seemann
+    hsanjuan
+    lucas-clemente
+    warpfork
+)
+
+[[ -n "${REPO_FILTER+x}" ]] || REPO_FILTER="github.com/(${$(printf "|%s" "${AUTHORS[@]}"):1})"
+
+[[ -n "${IGNORED_FILES+x}" ]] || IGNORED_FILES='^\(\.gx\|package\.json\|\.travis\.yml\|go.mod\|go\.sum|\.github|\.circleci\)$'
 
 NL=$'\n'
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
 
 msg() {
     echo "$*" >&2
 }
 
 statlog() {
-    rpath="$GOPATH/src/$1"
-    start="${2:-}"
-    end="${3:-HEAD}"
-    git -C "$rpath" log --shortstat --no-merges --pretty="tformat:%H%n%aN%n%aE" "$start..$end" | while 
+    local rpath="$GOPATH/src/$1"
+    local start="${2:-}"
+    local end="${3:-HEAD}"
+    local mailmap_file="$rpath/.mailmap"
+    if ! [[ -e "$mailmap_file" ]]; then
+        mailmap_file="$ROOT_DIR/.mailmap"
+    fi
+
+    git -C "$rpath" -c mailmap.file="$mailmap_file" log --use-mailmap --shortstat --no-merges --pretty="tformat:%H%n%aN%n%aE" "$start..$end" | while 
         read hash
         read name
         read email
@@ -63,30 +92,45 @@ dep_changes() {
 
 # resolve_commits resolves a git ref for each version.
 resolve_commits() {
-    jq '. + {Ref: (.Version|capture("^((?<ref1>.*)\\+incompatible|v.*-[0-9]{14}-(?<ref2>[a-f0-9]{12})|(?<ref3>v.*))$") | .ref1 // .ref2 // .ref3)}'
+    jq '. + {Ref: (.Version|capture("^((?<ref1>.*)\\+incompatible|v.*-(0\\.)?[0-9]{14}-(?<ref2>[a-f0-9]{12})|(?<ref3>v.*))$") | .ref1 // .ref2 // .ref3)}'
+}
+
+pr_link() {
+    local repo="$1"
+    local prnum="$2"
+    local ghname="${repo##github.com/}"
+    printf -- "[%s#%s](https://%s/pull/%s)" "$ghname" "$prnum" "$repo" "$prnum"
 }
 
 # Generate a release log for a range of commits in a single repo.
 release_log() {
+    setopt local_options BASH_REMATCH
+
     local repo="$1"
     local start="$2"
     local end="${3:-HEAD}"
-    local ghname="${repo##github.com/}"
     local dir="$GOPATH/src/$repo"
 
-    local commit prnum
+    local commit pr
     git -C "$dir" log \
         --format='tformat:%H %s' \
-        --merges \
+        --first-parent \
         "$start..$end" |
-        sed -n -e 's/\([a-f0-9]\+\) .*#\([0-9]\+\).*/\1 \2/p' |
-        while read commit prnum; do
+        while read commit subject; do
             # Skip gx-only PRs.
             git -C "$dir" diff-tree --no-commit-id --name-only "$commit^" "$commit" |
                 grep -v "${IGNORED_FILES}" >/dev/null || continue
 
-            local desc="$(git -C "$dir" show --summary --format='tformat:%b' "$commit" | head -1)"
-            printf -- "- %s ([%s#%s](https://%s/pull/%s))\n" "$desc" "$ghname" "$prnum" "$repo" "$prnum"
+            if [[ "$subject" =~ '^Merge pull request #([0-9]+) from' ]]; then
+                local prnum="${BASH_REMATCH[2]}"
+                local desc="$(git -C "$dir" show --summary --format='tformat:%b' "$commit" | head -1)"
+                printf -- "- %s (%s)\n" "$desc" "$(pr_link "$repo" "$prnum")"
+            elif [[ "$subject" =~ '\(#([0-9]+)\)$' ]]; then
+                local prnum="${BASH_REMATCH[2]}"
+                printf -- "- %s (%s)\n" "$subject" "$(pr_link "$repo" "$prnum")"
+            else
+                printf -- "- %s\n" "$subject"
+            fi
         done
 }
 
@@ -124,8 +168,15 @@ recursive_release_log() {
     local start="${1:-$(git tag -l | sort -V | grep -v -- '-rc' | grep 'v'| tail -n1)}"
     local end="${2:-$(git rev-parse HEAD)}"
     local repo_root="$(git rev-parse --show-toplevel)"
-    local package="$(go list)"
+    local package="$(cd "$repo_root" && go list)"
+
+    if ! [[ "${GOPATH}/${package}" != "${repo_root}" ]]; then
+        echo "This script requires the target package and all dependencies to live in a GOPATH."
+        return 1
+    fi
+
     (
+        local result=0
         local workspace="$(mktemp -d)"
         trap "$(printf 'rm -rf "%q"' "$workspace")" INT TERM EXIT
         cd "$workspace"
@@ -153,9 +204,13 @@ recursive_release_log() {
             # Compute changelogs
             jq -r '"\(.Path) \(.New.Version) \(.New.Ref) \(.Old.Version) \(.Old.Ref // "")"' |
             while read repo new new_ref old old_ref; do
-                ensure "$repo" "$new_ref"
-                statlog "$repo" "$old_ref" "$new_ref" >> statlog.json
-                local changelog="$(release_log "$repo" "$old_ref" "$new_ref")"
+                if ! ensure "$repo" "$new_ref"; then
+                    result=1
+                    local changelog="failed to fetch repo"
+                else
+                    statlog "$repo" "$old_ref" "$new_ref" >> statlog.json
+                    local changelog="$(release_log "$repo" "$old_ref" "$new_ref")"
+                fi
                 if [[ -n "$changelog" ]]; then
                     printf -- "- %s (%s -> %s):\n" "$repo" "$old" "$new"
                     echo "$changelog" | indent
@@ -171,6 +226,7 @@ recursive_release_log() {
         statsummary <statlog.json |
             jq -s 'sort_by(.Lines) | reverse | .[]' |
             jq -r '"| \(.Author) | \(.Commits) | +\(.Insertions)/-\(.Deletions) | \(.Files) |"'
+        return "$status"
     )
 }
 

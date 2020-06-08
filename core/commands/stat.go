@@ -29,6 +29,7 @@ for your IPFS node.`,
 		"bw":      statBwCmd,
 		"repo":    repoStatCmd,
 		"bitswap": bitswapStatCmd,
+		"dht":     statDhtCmd,
 	},
 }
 
@@ -109,7 +110,7 @@ Example:
 
 		var pid peer.ID
 		if pfound {
-			checkpid, err := peer.IDB58Decode(pstr)
+			checkpid, err := peer.Decode(pstr)
 			if err != nil {
 				return err
 			}

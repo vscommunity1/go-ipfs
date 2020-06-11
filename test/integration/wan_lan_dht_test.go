@@ -13,20 +13,11 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-ipfs/core"
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	mock "github.com/ipfs/go-ipfs/core/mock"
 	libp2p2 "github.com/ipfs/go-ipfs/core/node/libp2p"
 
 	corenet "github.com/libp2p/go-libp2p-core/network"
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	"github.com/ipfs/go-ipfs/core/bootstrap"
 	mock "github.com/ipfs/go-ipfs/core/mock"
@@ -34,10 +25,6 @@ import (
 	corenet "github.com/libp2p/go-libp2p-core/network"
 	peer "github.com/libp2p/go-libp2p-core/peer"
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	"github.com/libp2p/go-libp2p-core/peerstore"
 	testutil "github.com/libp2p/go-libp2p-testing/net"
@@ -74,19 +61,10 @@ func TestDHTConnectivitySlowRouting(t *testing.T) {
 }
 
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 var wanPrefix = net.ParseIP("2000::")
 =======
 var wanPrefix = net.ParseIP("100::")
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
-var wanPrefix = net.ParseIP("2000::")
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 var lanPrefix = net.ParseIP("fe80::")
 
@@ -99,17 +77,9 @@ func makeAddr(n uint32, wan bool) ma.Multiaddr {
 	}
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 	binary.LittleEndian.PutUint32(ip[12:], n)
 =======
-	binary.LittleEndian.PutUint32(ip[4:], n)
->>>>>>> integration test for the dual dht
-=======
-<<<<<<< HEAD
 	binary.LittleEndian.PutUint32(ip[12:], n)
-=======
-	binary.LittleEndian.PutUint32(ip[4:], n)
->>>>>>> integration test for the dual dht
 =======
 	binary.LittleEndian.PutUint32(ip[12:], n)
 >>>>>>> master
@@ -142,11 +112,6 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 	lanPeers := []*core.IpfsNode{}
 
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	connectionContext, connCtxCancel := context.WithTimeout(ctx, 15*time.Second)
 	defer connCtxCancel()
@@ -155,20 +120,12 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 			Online:  true,
 			Routing: libp2p2.DHTServerOption,
 			Host:    mock.MockHostOption(mn),
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	for i := 0; i < numPeers; i++ {
 		wanPeer, err := core.NewNode(ctx, &core.BuildCfg{
 			Online: true,
 			Host:   mock.MockHostOption(mn),
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		})
 		if err != nil {
@@ -179,19 +136,11 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 		wanPeer.Peerstore.AddAddr(wanPeer.Identity, wanAddr, peerstore.PermanentAddrTTL)
 		for _, p := range wanPeers {
 <<<<<<< HEAD
-<<<<<<< HEAD
 			_, _ = mn.LinkPeers(p.Identity, wanPeer.Identity)
 			_ = wanPeer.PeerHost.Connect(connectionContext, p.Peerstore.PeerInfo(p.Identity))
 =======
-			mn.ConnectPeers(p.Identity, wanPeer.Identity)
->>>>>>> integration test for the dual dht
-=======
-<<<<<<< HEAD
 			_, _ = mn.LinkPeers(p.Identity, wanPeer.Identity)
 			_ = wanPeer.PeerHost.Connect(connectionContext, p.Peerstore.PeerInfo(p.Identity))
-=======
-			mn.ConnectPeers(p.Identity, wanPeer.Identity)
->>>>>>> integration test for the dual dht
 =======
 			_, _ = mn.LinkPeers(p.Identity, wanPeer.Identity)
 			_ = wanPeer.PeerHost.Connect(connectionContext, p.Peerstore.PeerInfo(p.Identity))
@@ -212,11 +161,6 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 		lanPeer.Peerstore.AddAddr(lanPeer.Identity, lanAddr, peerstore.PermanentAddrTTL)
 		for _, p := range lanPeers {
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 			_, _ = mn.LinkPeers(p.Identity, lanPeer.Identity)
 			_ = lanPeer.PeerHost.Connect(connectionContext, p.Peerstore.PeerInfo(p.Identity))
@@ -238,10 +182,6 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 		}
 	}
 	err = testPeer.PeerHost.Connect(ctx, lanPeers[0].Peerstore.PeerInfo(lanPeers[0].Identity))
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 			mn.ConnectPeers(p.Identity, lanPeer.Identity)
 		}
@@ -251,21 +191,12 @@ func RunDHTConnectivity(conf testutil.LatencyConfig, numPeers int) error {
 	// The test peer is connected to one lan peer.
 	_, err = mn.ConnectPeers(testPeer.Identity, lanPeers[0].Identity)
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	if err != nil {
 		return err
 	}
 
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	startupCtx, startupCancel := context.WithTimeout(ctx, time.Second*60)
 StartupWait:
@@ -288,10 +219,6 @@ StartupWait:
 		}
 	}
 	startupCancel()
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	err, done := <-testPeer.DHT.RefreshRoutingTable()
 	if err != nil || !done {
@@ -301,39 +228,22 @@ StartupWait:
 		return err
 	}
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 
 	// choose a lan peer and validate lan DHT is functioning.
 	i := rand.Intn(len(lanPeers))
 	if testPeer.PeerHost.Network().Connectedness(lanPeers[i].Identity) == corenet.Connected {
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		i = (i + 1) % len(lanPeers)
 		if testPeer.PeerHost.Network().Connectedness(lanPeers[i].Identity) == corenet.Connected {
 			_ = testPeer.PeerHost.Network().ClosePeer(lanPeers[i].Identity)
 			testPeer.PeerHost.Peerstore().ClearAddrs(lanPeers[i].Identity)
 		}
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 		testPeer.PeerHost.Network().ClosePeer(lanPeers[i].Identity)
 		testPeer.PeerHost.Peerstore().ClearAddrs(lanPeers[i].Identity)
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	}
 	// That peer will provide a new CID, and we'll validate the test node can find it.
@@ -344,11 +254,6 @@ StartupWait:
 		return err
 	}
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	provChan := testPeer.DHT.FindProvidersAsync(provideCtx, provideCid, 0)
 	prov, ok := <-provChan
@@ -392,10 +297,6 @@ WanStartupWait:
 		}
 	}
 	startupCancel()
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	provs, err := testPeer.DHT.FindProviders(provideCtx, provideCid)
 	if err != nil {
@@ -423,21 +324,12 @@ WanStartupWait:
 		return err
 	}
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 
 	// choose a wan peer and validate wan DHT is functioning.
 	i = rand.Intn(len(wanPeers))
 	if testPeer.PeerHost.Network().Connectedness(wanPeers[i].Identity) == corenet.Connected {
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		i = (i + 1) % len(wanPeers)
 		if testPeer.PeerHost.Network().Connectedness(wanPeers[i].Identity) == corenet.Connected {
@@ -446,19 +338,11 @@ WanStartupWait:
 		}
 	}
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 		testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
 		testPeer.PeerHost.Peerstore().ClearAddrs(wanPeers[i].Identity)
 	}
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	// That peer will provide a new CID, and we'll validate the test node can find it.
 	wanCid := cid.NewCidV1(cid.Raw, []byte("Wan Provide Record"))
@@ -468,11 +352,6 @@ WanStartupWait:
 		return err
 	}
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	provChan = testPeer.DHT.FindProvidersAsync(wanProvideCtx, wanCid, 0)
 	prov, ok = <-provChan
@@ -480,10 +359,6 @@ WanStartupWait:
 		return fmt.Errorf("Expected one provider, closed early")
 	}
 	if prov.ID != wanPeers[i].Identity {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	provs, err = testPeer.DHT.FindProviders(wanProvideCtx, wanCid)
 	if err != nil {
@@ -494,10 +369,6 @@ WanStartupWait:
 	}
 	if provs[0].ID != wanPeers[i].Identity {
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 		return fmt.Errorf("Unexpected lan peer provided record")
 	}
@@ -506,17 +377,9 @@ WanStartupWait:
 	i = rand.Intn(len(wanPeers))
 	if testPeer.PeerHost.Network().Connectedness(wanPeers[i].Identity) == corenet.Connected {
 <<<<<<< HEAD
-<<<<<<< HEAD
 		_ = testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
 =======
-		testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
->>>>>>> integration test for the dual dht
-=======
-<<<<<<< HEAD
 		_ = testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
-=======
-		testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
->>>>>>> integration test for the dual dht
 =======
 		_ = testPeer.PeerHost.Network().ClosePeer(wanPeers[i].Identity)
 >>>>>>> master
@@ -530,11 +393,6 @@ WanStartupWait:
 		return err
 	}
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	provChan = testPeer.DHT.FindProvidersAsync(provideCtx, provideCid, 0)
 	prov, ok = <-provChan
@@ -544,10 +402,6 @@ WanStartupWait:
 	prov, ok = <-provChan
 	if !ok {
 		return fmt.Errorf("Expected two providers, got 1")
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 =======
 	provs, err = testPeer.DHT.FindProviders(provideCtx, provideCid)
 	if err != nil {
@@ -556,10 +410,6 @@ WanStartupWait:
 	if len(provs) != 2 {
 		return fmt.Errorf("Expected two providers, got %d", len(provs))
 >>>>>>> integration test for the dual dht
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
 >>>>>>> 795845ea3e69d475f7eeab37fa155ed9964486ee
 	}
 
